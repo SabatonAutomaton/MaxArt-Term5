@@ -12,6 +12,7 @@ double* vect = nullptr;
 double* initialApprox = nullptr;
 double* new_initialApprox = nullptr;
 int* result = nullptr;
+int* fict = nullptr;
 int n_x = 0, n_y = 0, m = 0, maxiter = 10, countDiag = 5, maindiag = 0;
 double w = 1;//параметр w
 double accuracy = 1e-5;
@@ -26,7 +27,7 @@ vector<double> mesh_y;
 
 double u(double x, double y)
 {
-	return 1;
+	return x+y;
 }
 
 static void read()
@@ -34,8 +35,9 @@ static void read()
 	ifstream f("mesh.txt");
 	ifstream fv("vector.txt");
 	ifstream fp("params.txt");
+	ifstream ff("fict.txt");
 
-	if (!f || !fv || !fp)
+	if (!f || !fv || !fp || !ff)
 	{
 		cerr << "File open error" << endl;
 		return;
@@ -72,6 +74,28 @@ static void read()
 	result = new int[n_x * n_y]();
 
 	maindiag = 2;
+
+	fict = new int[n_x * n_y] {0};
+	int x_a = 0, x_b = 0, y_a = 0, y_b = 0, type = 0;
+
+	while (ff >> type >> x_a >> x_b >> y_a >> y_b)
+	{
+		for (int i = x_a; i <= x_b; i++)
+			for (int j = y_a; j <= y_b; j++)
+			{
+				if (!type)
+					fict[j * n_x + i] = 1;
+				else if (fict[j * n_x + i] == 1)
+					fict[j * n_x + i] = 2;
+				else if (fict[j * n_x + i] != 2)
+					fict[j * n_x + i] = 0;
+			}
+	}
+
+	//отладочная
+	for (int i = 0; i < n_x * n_y; i++)
+		cout << "fict[" << i << "] = " << fict[i] << " ";
+	cout << '\n';
 }
 
 void build_portrait()
@@ -107,11 +131,19 @@ void build_matrix()
 		for (int j = 1; j < n_x - 1; j++)
 		{
 			int k = n_x * i + j;
-			A[0][k + ind[0]] = -lambda / (h_y * h_y);
-			A[1][k + ind[1]] = -lambda / (h_x * h_x);
-			A[2][k + ind[2]] = 2 * lambda * (1 / (h_x * h_x) + 1 / (h_y * h_y)) + gamma;
-			A[3][k] = -lambda / (h_x * h_x);
-			A[4][k] = -lambda / (h_y * h_y);
+
+			if (fict[k] == 2)
+			{
+				A[2][k + ind[2]] = 1;
+			}
+			else
+			{
+				A[0][k + ind[0]] = -lambda / (h_y * h_y);
+				A[1][k + ind[1]] = -lambda / (h_x * h_x);
+				A[2][k + ind[2]] = 2 * lambda * (1 / (h_x * h_x) + 1 / (h_y * h_y)) + gamma;
+				A[3][k] = -lambda / (h_x * h_x);
+				A[4][k] = -lambda / (h_y * h_y);
+			}
 		}
 	}
 
@@ -146,7 +178,8 @@ void out_file(int n)
 {
 	fstream out("out.txt", 2);
 	for (int i = 0; i < n; i++)
-		out << fixed << setprecision(16) << initialApprox[i] << '\n';
+		if (fict[i] != 1)
+			out << fixed << setprecision(16) << initialApprox[i] << '\n';
 }
 
 void multiplice(int n)
@@ -253,7 +286,7 @@ int main()
 	cin >> choise;
 
 	cout << "k     residual       w\n";
-	Jacobi_Gauss_Seidel(n,choise,w);
+	Jacobi_Gauss_Seidel(n, choise, w);
 
 
 	out_file(n);
@@ -266,4 +299,5 @@ int main()
 	delete[] A;
 	delete[] ind;
 	delete[] vect;
+	delete[] fict;
 }
