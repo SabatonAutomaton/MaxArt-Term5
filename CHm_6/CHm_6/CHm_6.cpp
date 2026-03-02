@@ -33,6 +33,8 @@ double func_kray(double x, double y, int choise)
 	{
 	case 1:
 		return 1;
+	case 2:
+		return thetha;
 	default:
 		return 0;
 	}
@@ -176,64 +178,145 @@ void build_portrait()
 
 void build_matrix()
 {
-
 	vect = new double[n_x * n_y];
 
-	for (int i = 0; i < n_x; i++)
+	for (int i = 0; i < n_y; ++i)
 	{
-		if (kray[i] == 1)
-			A[2][i] = 1;
-
-		//ПО X cнизу
-		//(func_kray(mesh_x[i + 1], mesh_y[0], kray[i]) - func_kray(mesh_x[i], mesh_y[0], kray[i])) / (mesh_x[i + 1] - mesh_x[i]);
-		//(func_kray(mesh_x[i], mesh_y[0], kray[i]) - func_kray(mesh_x[i - 1], mesh_y[0], kray[i])) / (mesh_x[i] - mesh_x[i - 1]);
-		//(func_kray(mesh_x[i + 1], mesh_y[0], kray[i]) - func_kray(mesh_x[i - 1], mesh_y[0], kray[i])) / (mesh_x[i + 1] - mesh_x[i - 1]);
-
-		//ПО X cверху
-		//(func_kray(mesh_x[i + 1], mesh_y[n_y - 1], kray[i]) - func_kray(mesh_x[i], mesh_y[n_y - 1], kray[i])) / (mesh_x[i + 1] - mesh_x[i]);
-		//(func_kray(mesh_x[i], mesh_y[n_y - 1], kray[i]) - func_kray(mesh_x[i - 1], mesh_y[n_y - 1], kray[i])) / (mesh_x[i] - mesh_x[i - 1]);
-		//(func_kray(mesh_x[i + 1], mesh_y[n_y - 1], kray[i]) - func_kray(mesh_x[i - 1], mesh_y[n_y - 1], kray[i])) / (mesh_x[i + 1] - mesh_x[i - 1]);
-
-		//ПО Y слева
-		//(func_kray(mesh_x[0], mesh_y[i + 1], kray[i]) - func_kray(mesh_x[0], mesh_y[i], kray[i])) / (mesh_y[i + 1] - mesh_y[i]);
-		//(func_kray(mesh_x[0], mesh_y[i], kray[i]) - func_kray(mesh_x[0], mesh_y[i - 1], kray[i])) / (mesh_y[i] - mesh_y[i - 1]);
-		//(func_kray(mesh_x[0], mesh_y[i + 1], kray[i]) - func_kray(mesh_x[0], mesh_y[i - 1], kray[i])) / (mesh_y[i + 1] - mesh_y[i - 1]);
-
-		//ПО Y справа
-		//(func_kray(mesh_x[n_x - 1], mesh_y[i + 1], kray[i]) - func_kray(mesh_x[n_x - 1], mesh_y[i], kray[i])) / (mesh_y[i + 1] - mesh_y[i]);
-		//(func_kray(mesh_x[n_x - 1], mesh_y[i], kray[i]) - func_kray(mesh_x[n_x - 1], mesh_y[i - 1], kray[i])) / (mesh_y[i] - mesh_y[i - 1]);
-		//(func_kray(mesh_x[n_x - 1], mesh_y[i + 1], kray[i]) - func_kray(mesh_x[n_x - 1], mesh_y[i - 1], kray[i])) / (mesh_y[i + 1] - mesh_y[i - 1]);
-
-		if (kray[n_x * n_y - i - 1] == 1)
-			A[2][n_x * n_y - i - 1] = 1;
-
-		vect[i] = func_kray(mesh_x[i], mesh_y[0], kray[i]);
-		vect[n_x * n_y - i - 1] = func_kray(mesh_x[n_x - i - 1], mesh_y[n_y - 1], kray[n_x * n_y - i - 1]);
-	}
-
-	for (int i = 1; i < n_y - 1; i++)
-	{
-		double hn_y = mesh_y[i + 1] - mesh_y[i - 1];
-
-		if (kray[n_x * i] == 1)
-			A[2][n_x * i] = 1;
-
-		if (kray[n_x * i + n_x - 1] == 1)
-			A[2][n_x * i + n_x - 1] = 1;
-
-		vect[n_x * i] = func_kray(mesh_x[0], mesh_y[i], kray[i]);
-		vect[n_x * i + n_x - 1] = func_kray(mesh_x[n_x - 1], mesh_y[i], kray[n_x * i + n_x - 1]);
-
-		for (int j = 1; j < n_x - 1; j++)
+		for (int j = 0; j < n_x; ++j)
 		{
-			int k = n_x * i + j;
+			int k = i * n_x + j;
+
+			bool is_bottom = (i == 0);
+			bool is_top = (i == n_y - 1);
+			bool is_left = (j == 0);
+			bool is_right = (j == n_x - 1);
+
+			if (kray[k] == 1)
+			{
+				A[2][k] = 1.0;
+				vect[k] = func_kray(mesh_x[j], mesh_y[i], 1);
+				continue;
+			}
+
+			if (is_bottom)
+			{
+				if (j == 0)
+				{
+					double h = mesh_x[1] - mesh_x[0];
+					A[2][0] = lambda / h;
+					A[3][0] = -lambda / h;
+					vect[k] = func_kray(mesh_x[0], mesh_y[0], kray[k]);
+				}
+				else if (j == n_x - 1)
+				{
+					double h = mesh_x[n_x - 1] - mesh_x[n_x - 2];
+					A[2][n_x - 1] = -lambda / h;
+					A[1][n_x - 1 + ind[1]] = lambda / h;
+					vect[k] = func_kray(mesh_x[n_x - 1], mesh_y[0], kray[k]);
+				}
+				else
+				{
+					double h = mesh_x[j + 1] - mesh_x[j - 1];
+					A[1][j + ind[1]] = lambda / h;
+					A[3][j] = -lambda / h;
+					vect[k] = func_kray(mesh_x[i], mesh_y[0], kray[k]);
+				}
+				continue;
+			}
+
+			if (is_top)
+			{
+				if (j == 0)
+				{
+					double h = mesh_x[1] - mesh_x[0];
+					A[2][n_x * n_y - n_x] = -lambda / h;
+					A[3][n_x * n_y - n_x + 1] = lambda / h;
+					vect[k] = func_kray(mesh_x[0], mesh_y[n_y - 1], kray[k]);
+				}
+				else if (j == n_x - 1)
+				{
+					double h = mesh_x[n_x - 1] - mesh_x[n_x - 2];
+					A[2][n_x * n_y - 1] = lambda / h;
+					A[1][n_x * n_y - 1 + ind[1]] = -lambda / h;
+					vect[k] = func_kray(mesh_x[n_x - 1], mesh_y[n_y - 1], kray[k]);
+				}
+				else
+				{
+					double h = mesh_x[j + 1] - mesh_x[j - 1];
+					A[1][n_x * n_y - n_x + i + ind[1]] = -lambda / h;
+					A[3][n_x * n_y - n_x + i] = lambda / h;
+					vect[k] = func_kray(mesh_x[i], mesh_y[n_y - 1], kray[k]);
+				}
+				continue;
+			}
+
+			if (is_left)
+			{
+				if (i == 0)
+				{
+					double h = mesh_y[1] - mesh_y[0];
+					A[2][0] = lambda / h;
+					A[4][0] = -lambda / h;
+					vect[k] = func_kray(mesh_x[0], mesh_y[0], kray[k]);
+				}
+				else if (i == n_y - 1)
+				{
+					double h = mesh_y[n_y - 1] - mesh_y[n_y - 2];
+					A[2][n_x * n_y - n_x] = -lambda / h;
+					A[0][n_y * n_x - n_x + ind[0]] = lambda / h;
+					vect[k] = func_kray(mesh_x[0], mesh_y[n_y - 1], kray[k]);
+				}
+				else
+				{
+					double h = mesh_y[i + 1] - mesh_y[i - 1];
+					A[0][i * n_x + ind[0]] = lambda / h;
+					A[4][i * n_x] = -lambda / h;
+					vect[k] = func_kray(mesh_x[0], mesh_y[i], kray[k]);
+				}
+				continue;
+			}
+
+			if (is_right)
+			{
+				if (i == 0)
+				{
+					double h = mesh_y[1] - mesh_y[0];
+					A[2][n_x - 1] = -lambda / h;
+					A[4][n_x - 1] = lambda / h;
+					vect[k] = func_kray(mesh_x[n_x - 1], mesh_y[0], kray[k]);
+				}
+				else if (i == n_y - 1)
+				{
+					double h = mesh_y[n_y - 1] - mesh_y[n_y - 2];
+					A[2][n_x * n_y - 1] = lambda / h;
+					A[0][n_y * n_x - 1 + ind[0]] = -lambda / h;
+					vect[k] = func_kray(mesh_x[n_x - 1], mesh_y[n_y - 1], kray[k]);
+				}
+				else
+				{
+					double h = mesh_y[i + 1] - mesh_y[i - 1];
+					A[0][i * n_x + j + ind[0]] = -lambda / h;
+					A[4][i * n_x + j] = lambda / h;
+					vect[k] = func_kray(mesh_x[n_x - 1], mesh_y[i], kray[k]);
+				}
+				continue;
+			}
+
+			double hn_y = mesh_y[i + 1] - mesh_y[i - 1];
 			double hn_x = mesh_x[j + 1] - mesh_x[j - 1];
 
 			if (fict[k] == 2)
 			{
 				if (kray[k] == 1)
-					A[2][k + ind[2]] = 1;
-				vect[k] = func_kray(mesh_x[j], mesh_y[i], kray[k]);
+				{
+					A[2][k] = 1;
+					vect[k] = func_kray(mesh_x[j], mesh_y[i], kray[k]);
+				}
+				else
+				{
+					//Вопрос в какую сторону он направлен
+				}
+				
 			}
 			else if (fict[k] == 0)
 			{
@@ -248,7 +331,6 @@ void build_matrix()
 		}
 	}
 }
-
 
 
 void out_console(int n) {
