@@ -13,31 +13,40 @@ double* initialApprox = nullptr;
 double* new_initialApprox = nullptr;
 int* result = nullptr;
 int* fict = nullptr;
+int* kray = nullptr;
 int n_x = 0, n_y = 0, m = 0, maxiter = 10, countDiag = 5, maindiag = 0;
 double w = 1;//параметр w
 double accuracy = 1e-5;
-double a_x = 0, b_x = 0, h_x = 0;
-double a_y = 0, b_y = 0, h_y = 0;
+double a_x = 0, b_x = 0, h_x = 0, q_x = 0;
+double a_y = 0, b_y = 0, h_y = 0, q_y = 0;
 
 double lambda = 1;
 double gamma = 1;
+double thetha = 1;
 
 vector<double> mesh_x;
 vector<double> mesh_y;
 
-double u(double x, double y)
+double func_kray(double x, double y, int choise)
 {
-	return x+y;
+	switch (choise)
+	{
+	case 1:
+		return 1;
+	default:
+		return 0;
+	}
 }
 
-static void read()
+
+static void read(int choise)
 {
 	ifstream f("mesh.txt");
-	ifstream fv("vector.txt");
 	ifstream fp("params.txt");
 	ifstream ff("fict.txt");
+	ifstream fk("kray.txt");
 
-	if (!f || !fv || !fp || !ff)
+	if (!f || !fp || !ff || !fk)
 	{
 		cerr << "File open error" << endl;
 		return;
@@ -48,26 +57,61 @@ static void read()
 	fp >> w;
 
 	f >> n_x;//количество точек по х
+	f >> q_x;
 	f >> a_x;
 	f >> b_x;
 
-	h_x = (b_x - a_x) / (n_x - 1);
 
-	f >> n_y;//количество точек по х
+
+	f >> n_y;//количество точек по y
+	f >> q_y;
 	f >> a_y;
 	f >> b_y;
 
-	h_y = (b_y - a_y) / (n_y - 1);
+	double hi = 0;
+	double sum = 0;
 
-	//vector right part
-	vect = new double[n_x * n_y];
-	for (int i = 0; i < n_x * n_y; i++)
-		fv >> vect[i];
+	switch (choise)
+	{
+	case 0:
+		h_x = (b_x - a_x) / (n_x - 1);
+		h_y = (b_y - a_y) / (n_y - 1);
+		for (int i = 0; i < n_x; i++)
+			mesh_x.push_back(a_x + i * h_x);
+		for (int i = 0; i < n_y; i++)
+			mesh_y.push_back(a_y + i * h_y);
+		break;
+	case 1:
+		h_x = (b_x - a_x) * (1 - q_x) / (1 - pow(q_x, n_x - 1));
+		h_y = (b_y - a_y) * (1 - q_y) / (1 - pow(q_y, n_y - 1));
 
-	for (int i = 0; i < n_x; i++)
-		mesh_x.push_back(a_x + i * h_x);
-	for (int i = 0; i < n_y; i++)
-		mesh_y.push_back(a_y + i * h_y);
+		hi = h_x;
+		mesh_x.push_back(a_x);
+		for (int i = 1; i < n_x - 1; i++)
+		{
+			sum += h_x * pow(q_x, i - 1);
+			mesh_x.push_back(a_x + sum);
+
+		}
+		mesh_x.push_back(b_x);
+
+		hi = h_y;
+		sum = 0;
+		mesh_y.push_back(a_y);
+		for (int i = 1; i < n_y - 1; i++)
+		{
+			sum += h_y * pow(q_y, i - 1);
+			mesh_y.push_back(a_y + sum);
+		}
+		mesh_y.push_back(b_y);
+
+		break;
+	default:
+		break;
+	}
+
+
+
 
 	initialApprox = new double[n_x * n_y] {0};
 	new_initialApprox = new double[n_x * n_y]();
@@ -92,10 +136,31 @@ static void read()
 			}
 	}
 
+	kray = new int[n_x * n_y] {0};
+	x_a = 0, x_b = 0, y_a = 0, y_b = 0, type = 0;
+	int number_func = 0;
+
+	while (fk >> type >> number_func >> x_a >> x_b >> y_a >> y_b)
+	{
+
+		for (int i = x_a; i <= x_b; i++)
+		{
+			for (int j = y_a; j <= y_b; j++)
+			{
+				int k = n_x * i + j;
+				if (type == 1)
+					kray[k] = 1;
+				else if (type == 2)
+					kray[k] = number_func;
+				else if (type == 3)
+					kray[k] = number_func;
+			}
+		}
+	}
 	//отладочная
-	for (int i = 0; i < n_x * n_y; i++)
-		cout << "fict[" << i << "] = " << fict[i] << " ";
-	cout << '\n';
+	/*for (int i = 0; i < n_x * n_y; i++)
+		cout << "kray[" << i << "] = " << kray[i] << " ";
+	cout << '\n';*/
 }
 
 void build_portrait()
@@ -111,45 +176,80 @@ void build_portrait()
 
 void build_matrix()
 {
+
+	vect = new double[n_x * n_y];
+
 	for (int i = 0; i < n_x; i++)
 	{
-		A[2][i] = 1;
-		A[2][n_x * n_y - i - 1] = 1;
+		if (kray[i] == 1)
+			A[2][i] = 1;
 
-		vect[i] = u(mesh_x[i], mesh_y[0]);
-		vect[n_x * n_y - i - 1] = u(mesh_x[n_x - i - 1], mesh_y[n_y - 1]);
+		//ПО X cнизу
+		//(func_kray(mesh_x[i + 1], mesh_y[0], kray[i]) - func_kray(mesh_x[i], mesh_y[0], kray[i])) / (mesh_x[i + 1] - mesh_x[i]);
+		//(func_kray(mesh_x[i], mesh_y[0], kray[i]) - func_kray(mesh_x[i - 1], mesh_y[0], kray[i])) / (mesh_x[i] - mesh_x[i - 1]);
+		//(func_kray(mesh_x[i + 1], mesh_y[0], kray[i]) - func_kray(mesh_x[i - 1], mesh_y[0], kray[i])) / (mesh_x[i + 1] - mesh_x[i - 1]);
+
+		//ПО X cверху
+		//(func_kray(mesh_x[i + 1], mesh_y[n_y - 1], kray[i]) - func_kray(mesh_x[i], mesh_y[n_y - 1], kray[i])) / (mesh_x[i + 1] - mesh_x[i]);
+		//(func_kray(mesh_x[i], mesh_y[n_y - 1], kray[i]) - func_kray(mesh_x[i - 1], mesh_y[n_y - 1], kray[i])) / (mesh_x[i] - mesh_x[i - 1]);
+		//(func_kray(mesh_x[i + 1], mesh_y[n_y - 1], kray[i]) - func_kray(mesh_x[i - 1], mesh_y[n_y - 1], kray[i])) / (mesh_x[i + 1] - mesh_x[i - 1]);
+
+		//ПО Y слева
+		//(func_kray(mesh_x[0], mesh_y[i + 1], kray[i]) - func_kray(mesh_x[0], mesh_y[i], kray[i])) / (mesh_y[i + 1] - mesh_y[i]);
+		//(func_kray(mesh_x[0], mesh_y[i], kray[i]) - func_kray(mesh_x[0], mesh_y[i - 1], kray[i])) / (mesh_y[i] - mesh_y[i - 1]);
+		//(func_kray(mesh_x[0], mesh_y[i + 1], kray[i]) - func_kray(mesh_x[0], mesh_y[i - 1], kray[i])) / (mesh_y[i + 1] - mesh_y[i - 1]);
+
+		//ПО Y справа
+		//(func_kray(mesh_x[n_x - 1], mesh_y[i + 1], kray[i]) - func_kray(mesh_x[n_x - 1], mesh_y[i], kray[i])) / (mesh_y[i + 1] - mesh_y[i]);
+		//(func_kray(mesh_x[n_x - 1], mesh_y[i], kray[i]) - func_kray(mesh_x[n_x - 1], mesh_y[i - 1], kray[i])) / (mesh_y[i] - mesh_y[i - 1]);
+		//(func_kray(mesh_x[n_x - 1], mesh_y[i + 1], kray[i]) - func_kray(mesh_x[n_x - 1], mesh_y[i - 1], kray[i])) / (mesh_y[i + 1] - mesh_y[i - 1]);
+
+		if (kray[n_x * n_y - i - 1] == 1)
+			A[2][n_x * n_y - i - 1] = 1;
+
+		vect[i] = func_kray(mesh_x[i], mesh_y[0], kray[i]);
+		vect[n_x * n_y - i - 1] = func_kray(mesh_x[n_x - i - 1], mesh_y[n_y - 1], kray[n_x * n_y - i - 1]);
 	}
 
 	for (int i = 1; i < n_y - 1; i++)
 	{
-		A[2][n_x * i] = 1;
-		A[2][n_x * i + n_x - 1] = 1;
+		double hn_y = mesh_y[i + 1] - mesh_y[i - 1];
 
-		vect[n_x * i] = u(mesh_x[0], mesh_y[i]);
-		vect[n_x * i + n_x - 1] = u(mesh_x[n_x - 1], mesh_y[i]);
+		if (kray[n_x * i] == 1)
+			A[2][n_x * i] = 1;
+
+		if (kray[n_x * i + n_x - 1] == 1)
+			A[2][n_x * i + n_x - 1] = 1;
+
+		vect[n_x * i] = func_kray(mesh_x[0], mesh_y[i], kray[i]);
+		vect[n_x * i + n_x - 1] = func_kray(mesh_x[n_x - 1], mesh_y[i], kray[n_x * i + n_x - 1]);
 
 		for (int j = 1; j < n_x - 1; j++)
 		{
 			int k = n_x * i + j;
+			double hn_x = mesh_x[j + 1] - mesh_x[j - 1];
 
 			if (fict[k] == 2)
 			{
-				A[2][k + ind[2]] = 1;
+				if (kray[k] == 1)
+					A[2][k + ind[2]] = 1;
+				vect[k] = func_kray(mesh_x[j], mesh_y[i], kray[k]);
 			}
-			else
+			else if (fict[k] == 0)
 			{
-				A[0][k + ind[0]] = -lambda / (h_y * h_y);
-				A[1][k + ind[1]] = -lambda / (h_x * h_x);
-				A[2][k + ind[2]] = 2 * lambda * (1 / (h_x * h_x) + 1 / (h_y * h_y)) + gamma;
-				A[3][k] = -lambda / (h_x * h_x);
-				A[4][k] = -lambda / (h_y * h_y);
+				A[0][k + ind[0]] = -lambda / (hn_y * hn_y);
+				A[1][k + ind[1]] = -lambda / (hn_x * hn_x);
+				A[2][k + ind[2]] = 2 * lambda * (1 / (hn_x * hn_x) + 1 / (hn_y * hn_y)) + gamma;
+				A[3][k] = -lambda / (hn_x * hn_x);
+				A[4][k] = -lambda / (hn_y * hn_y);
+
+				vect[k] = func_kray(mesh_x[j], mesh_y[i], 1);
 			}
 		}
 	}
-
-
-
 }
+
+
 
 void out_console(int n) {
 
@@ -178,8 +278,12 @@ void out_file(int n)
 {
 	fstream out("out.txt", 2);
 	for (int i = 0; i < n; i++)
+	{
 		if (fict[i] != 1)
 			out << fixed << setprecision(16) << initialApprox[i] << '\n';
+		else
+			out << fixed << setprecision(16) << 0 << '\n';
+	}
 }
 
 void multiplice(int n)
@@ -272,8 +376,11 @@ void Jacobi_Gauss_Seidel(int n, bool choise, double w)
 
 int main()
 {
+	bool choise = 0;
+	cout << "Enter type mesh(0,1) 0-Uniform, 1-Not uniform\n";
+	cin >> choise;
 
-	read();
+	read(choise);
 	int n = n_x * n_y;
 
 	build_portrait();
@@ -281,10 +388,10 @@ int main()
 
 	out_console(n);
 
-	bool choise = 0;
-	cout << "Enter method(0,1) 0-Jacobi, 1-Gauss_Seidel\n";
-	cin >> choise;
 
+	//cout << "Enter method(0,1) 0-Jacobi, 1-Gauss_Seidel\n";
+	//cin >> choise;
+	choise = 1;
 	cout << "k     residual       w\n";
 	Jacobi_Gauss_Seidel(n, choise, w);
 
