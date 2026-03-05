@@ -32,12 +32,19 @@ double func_kray(double x, double y, int choise)
 	switch (choise)
 	{
 	case 1:
-		return x+y;
+		return x*x + y*y;
 	case 2:
-		return 1;
+		return 2*x ;
+	case 3:
+		return 2*y ;
 	default:
 		return 0;
 	}
+}
+
+double f(double x, double y)
+{
+	return x*x + y*y - 4;
 }
 
 
@@ -153,7 +160,7 @@ static void read(int choise)
 				if (type == 1)
 					kray[k] = 1;
 				else if (type == 2)
-					if (kray[k]!=1)
+					if (kray[k] != 1)
 						kray[k] = number_func;
 			}
 		}
@@ -179,6 +186,18 @@ void build_matrix()
 {
 
 	vect = new double[n_x * n_y];
+
+	for (int i = 0; i < n_y; i++)
+		for (int j = 0; j < n_x; j++)
+		{
+			int k = n_x * i + j;
+			vect[k] = f(mesh_x[j], mesh_y[i]);
+		}
+
+	/*cout << "\nvect before\n";
+	for (int i = 0; i < n_x * n_y; i++)
+		cout << "vect[" << i << "] = " << vect[i] << " ";
+	cout << '\n';*/
 
 	for (int i = 0; i < n_x; i++)
 	{
@@ -212,7 +231,6 @@ void build_matrix()
 
 	for (int i = 1; i < n_y - 1; i++)
 	{
-		double hn_y = mesh_y[i + 1] - mesh_y[i - 1];
 
 		if (kray[n_x * i] == 1)
 		{
@@ -243,7 +261,6 @@ void build_matrix()
 		for (int j = 1; j < n_x - 1; j++)
 		{
 			int k = n_x * i + j;
-			double hn_x = mesh_x[j + 1] - mesh_x[j - 1];
 
 			if (fict[k] == 2)
 			{
@@ -253,16 +270,23 @@ void build_matrix()
 			}
 			else if (fict[k] == 0)
 			{
-				A[0][k + ind[0]] = -lambda / (hn_y * hn_y);
-				A[1][k + ind[1]] = -lambda / (hn_x * hn_x);
-				A[2][k + ind[2]] = 2 * lambda * (1 / (hn_x * hn_x) + 1 / (hn_y * hn_y)) + gamma;
-				A[3][k] = -lambda / (hn_x * hn_x);
-				A[4][k] = -lambda / (hn_y * hn_y);
+				double h_x_next = mesh_x[j + 1] - mesh_x[j];
+				double h_x_prev = mesh_x[j] - mesh_x[j - 1];
+				double h_y_next = mesh_y[i + 1] - mesh_y[i];
+				double h_y_prev = mesh_y[i] - mesh_y[i - 1];
 
-				vect[k] = func_kray(mesh_x[j], mesh_y[i], 1);
+				A[0][k + ind[0]] = -2 * lambda / (h_y_prev * (h_y_next + h_y_prev));
+				A[1][k + ind[1]] = -2 * lambda / (h_x_prev * (h_x_next + h_x_prev));
+				A[2][k + ind[2]] = 2 * lambda * (1 / (h_x_prev * h_x_next) + 1 / (h_y_prev * h_y_next)) + gamma;
+				A[3][k] = -2 * lambda / (h_x_next * (h_x_next + h_x_prev));
+				A[4][k] = -2 * lambda / (h_y_next * (h_y_next + h_y_prev));
 			}
 		}
 	}
+	cout << "\nvect after\n";
+	for (int i = 0; i < n_x * n_y; i++)
+		cout << "vect[" << i << "] = " << vect[i] << " ";
+	cout << '\n';
 }
 
 
