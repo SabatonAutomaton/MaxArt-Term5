@@ -32,11 +32,20 @@ double func_kray(double x, double y, int choise)
 	switch (choise)
 	{
 	case 1:
-		return x*x + y*y;
+		return x * x + y * y;
+	default:
+		return 0;
+	}
+}
+
+double theta(double x, double y, int choise)
+{
+	switch (choise)
+	{
+	case 1:
+		return -2 * x;
 	case 2:
-		return 2*x ;
-	case 3:
-		return 2*y ;
+		return 2 * x;
 	default:
 		return 0;
 	}
@@ -44,7 +53,7 @@ double func_kray(double x, double y, int choise)
 
 double f(double x, double y)
 {
-	return x*x + y*y - 4;
+	return x * x + y * y - 4;
 }
 
 
@@ -166,9 +175,9 @@ static void read(int choise)
 		}
 	}
 	//отладочная
-	for (int i = 0; i < n_x * n_y; i++)
+	/*for (int i = 0; i < n_x * n_y; i++)
 		cout << "kray[" << i << "] = " << kray[i] << " ";
-	cout << '\n';
+	cout << '\n';*/
 }
 
 void build_portrait()
@@ -187,6 +196,7 @@ void build_matrix()
 
 	vect = new double[n_x * n_y];
 
+	// filling right vector
 	for (int i = 0; i < n_y; i++)
 		for (int j = 0; j < n_x; j++)
 		{
@@ -194,13 +204,9 @@ void build_matrix()
 			vect[k] = f(mesh_x[j], mesh_y[i]);
 		}
 
-	/*cout << "\nvect before\n";
-	for (int i = 0; i < n_x * n_y; i++)
-		cout << "vect[" << i << "] = " << vect[i] << " ";
-	cout << '\n';*/
-
 	for (int i = 0; i < n_x; i++)
 	{
+		// under kray
 		if (kray[i] == 1)
 		{
 			A[2][i] = 1;
@@ -209,11 +215,12 @@ void build_matrix()
 		else
 		{
 			double h = mesh_y[1] - mesh_y[0];
-			A[2][i] = -lambda / h;
-			A[4][i] = lambda / h;
-			vect[i] = func_kray(mesh_x[i], mesh_y[0], kray[i]);
+			A[2][i] = lambda / h;
+			A[4][i] = -lambda / h;
+			vect[i] = theta(mesh_x[i], mesh_y[0], kray[i]);
 		}
 
+		// up kray
 		if (kray[n_x * n_y - i - 1] == 1)
 		{
 			A[2][n_x * n_y - i - 1] = 1;
@@ -224,7 +231,7 @@ void build_matrix()
 			double h = mesh_y[n_y - 1] - mesh_y[n_y - 2];
 			A[0][n_x * n_y - i - 1 + ind[0]] = -lambda / h;
 			A[2][n_x * n_y - i - 1] = lambda / h;
-			vect[n_x * n_y - i - 1] = func_kray(mesh_x[n_x - i - 1], mesh_y[n_y - 1], kray[n_x * n_y - i - 1]);
+			vect[n_x * n_y - i - 1] = theta(mesh_x[n_x - i - 1], mesh_y[n_y - 1], kray[n_x * n_y - i - 1]);
 		}
 
 	}
@@ -232,6 +239,7 @@ void build_matrix()
 	for (int i = 1; i < n_y - 1; i++)
 	{
 
+		// left kray
 		if (kray[n_x * i] == 1)
 		{
 			A[2][n_x * i] = 1;
@@ -240,11 +248,12 @@ void build_matrix()
 		else
 		{
 			double h = mesh_x[1] - mesh_x[0];
-			A[2][n_x * i] = -lambda / h;
-			A[3][n_x * i] = lambda / h;
-			vect[n_x * i] = func_kray(mesh_x[0], mesh_y[i], kray[n_x * i]);
+			A[2][n_x * i] = lambda / h;
+			A[3][n_x * i] = -lambda / h;
+			vect[n_x * i] = theta(mesh_x[0], mesh_y[i], kray[n_x * i]);
 		}
 
+		// right kray
 		if (kray[n_x * i + n_x - 1] == 1)
 		{
 			A[2][n_x * i + n_x - 1] = 1;
@@ -255,13 +264,14 @@ void build_matrix()
 			double h = mesh_x[n_x - 1] - mesh_x[n_x - 2];
 			A[1][n_x * i + n_x - 1 + ind[1]] = -lambda / h;
 			A[2][n_x * i + n_x - 1] = lambda / h;
-			vect[n_x * i + n_x - 1] = func_kray(mesh_x[n_x - 1], mesh_y[i], kray[n_x * i + n_x - 1]);
+			vect[n_x * i + n_x - 1] = theta(mesh_x[n_x - 1], mesh_y[i], kray[n_x * i + n_x - 1]);
 		}
 
 		for (int j = 1; j < n_x - 1; j++)
 		{
 			int k = n_x * i + j;
 
+			// inter kray
 			if (fict[k] == 2)
 			{
 				if (kray[k] == 1)
@@ -283,10 +293,6 @@ void build_matrix()
 			}
 		}
 	}
-	cout << "\nvect after\n";
-	for (int i = 0; i < n_x * n_y; i++)
-		cout << "vect[" << i << "] = " << vect[i] << " ";
-	cout << '\n';
 }
 
 
@@ -296,18 +302,18 @@ void out_console(int n) {
 	for (int i = 0; i < countDiag; i++)
 		cout << "i[" << i << "] = " << ind[i] << " ";
 	cout << '\n';
-
+	cout << '\n';
 	for (int i = 0; i < countDiag; i++)
 	{
 		for (int j = 0; j < n; j++)
 			cout << "A[" << i << "][" << j << "] = " << A[i][j] << " ";
 		cout << '\n';
 	}
-
+	cout << '\n';
 	for (int i = 0; i < n; i++)
 		cout << "vect[" << i << "] = " << vect[i] << " ";
 	cout << '\n';
-
+	cout << '\n';
 	for (int i = 0; i < n; i++)
 		cout << "x[" << i << "] = " << fixed << setprecision(5) << initialApprox[i] << " ";
 	cout << '\n';
