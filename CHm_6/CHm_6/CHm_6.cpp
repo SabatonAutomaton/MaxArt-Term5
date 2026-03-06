@@ -32,7 +32,7 @@ double func_kray(double x, double y, int choise)
 	switch (choise)
 	{
 	case 1:
-		return x * x + y * y;
+		return sin(y / 8);
 	default:
 		return 0;
 	}
@@ -42,10 +42,14 @@ double theta(double x, double y, int choise)
 {
 	switch (choise)
 	{
-	case 1:
-		return -2 * x;
 	case 2:
-		return 2 * x;
+		return -1;
+	case 3:
+		return 1;
+	case 4:
+		return -1;
+	case 5:
+		return cos(y / 8) / 8.;
 	default:
 		return 0;
 	}
@@ -53,7 +57,7 @@ double theta(double x, double y, int choise)
 
 double f(double x, double y)
 {
-	return x * x + y * y - 4;
+	return sin(y / 8) + sin(y / 8) / 64.;
 }
 
 
@@ -78,8 +82,6 @@ static void read(int choise)
 	f >> q_x;
 	f >> a_x;
 	f >> b_x;
-
-
 
 	f >> n_y;//количество точек по y
 	f >> q_y;
@@ -142,6 +144,7 @@ static void read(int choise)
 
 	while (ff >> type >> x_a >> x_b >> y_a >> y_b)
 	{
+		cout << "\n" << type << x_a << x_b << y_a << y_b << "\n";
 		for (int i = x_a; i <= x_b; i++)
 			for (int j = y_a; j <= y_b; j++)
 			{
@@ -160,7 +163,6 @@ static void read(int choise)
 
 	while (fk >> type >> number_func >> x_a >> x_b >> y_a >> y_b)
 	{
-
 		for (int i = x_a; i <= x_b; i++)
 		{
 			for (int j = y_a; j <= y_b; j++)
@@ -175,9 +177,9 @@ static void read(int choise)
 		}
 	}
 	//отладочная
-	/*for (int i = 0; i < n_x * n_y; i++)
-		cout << "kray[" << i << "] = " << kray[i] << " ";
-	cout << '\n';*/
+	for (int i = 0; i < n_x * n_y; i++)
+		cout << "kray[" << i << "] = " << kray[i] << "\n";
+	cout << '\n';
 }
 
 void build_portrait()
@@ -275,8 +277,47 @@ void build_matrix()
 			if (fict[k] == 2)
 			{
 				if (kray[k] == 1)
+				{
 					A[2][k + ind[2]] = 1;
-				vect[k] = func_kray(mesh_x[j], mesh_y[i], kray[k]);
+					vect[k] = func_kray(mesh_x[j], mesh_y[i], kray[k]);
+				}
+				else
+				{
+					//left
+					if (kray[k - 1] == 1)
+					{
+						double h = mesh_x[j + 1] - mesh_x[j];
+						A[2][k] = lambda / h;
+						A[3][k] = -lambda / h;
+						vect[k] = theta(mesh_x[j], mesh_y[i], kray[k]);
+					}
+					// right
+					else if (kray[k + 1] == 1)
+					{
+						double h = mesh_x[j] - mesh_x[j - 1];
+						A[1][k + ind[1]] = -lambda / h;
+						A[2][k] = lambda / h;
+						vect[k] = theta(mesh_x[j], mesh_y[i], kray[k]);
+					}
+					// under
+					else if (kray[k - n_x] == 1)
+					{
+						double h = mesh_y[i + 1] - mesh_y[i];
+						A[2][k] = lambda / h;
+						A[4][k] = -lambda / h;
+						vect[k] = theta(mesh_x[j], mesh_y[i], kray[k]);
+					}
+					// up
+					else if (kray[k + n_x] == 1)
+					{
+						double h = mesh_y[i] - mesh_y[i - 1];
+						A[0][k + ind[0]] = -lambda / h;
+						A[2][k] = lambda / h;
+						vect[k] = theta(mesh_x[j], mesh_y[i], kray[k]);
+					}
+					// krest
+
+				}
 			}
 			else if (fict[k] == 0)
 			{
@@ -291,11 +332,30 @@ void build_matrix()
 				A[3][k] = -2 * lambda / (h_x_next * (h_x_next + h_x_prev));
 				A[4][k] = -2 * lambda / (h_y_next * (h_y_next + h_y_prev));
 			}
+			else if (fict[k] == 1)
+			{
+				A[2][k] = 1;
+			}
 		}
 	}
 }
 
+void analytic()
+{
+	fstream out_anal("analytic.txt", 2);
 
+	for (int j = 0; j < n_y; j++)
+	{
+		for (int i = 0; i < n_x; i++)
+		{
+			int k = n_x * j + i;
+			if (fict[k] != 1)
+				out_anal << fixed << setprecision(16) << func_kray(mesh_x[i], mesh_y[j], 1) << '\n';
+			else
+				out_anal << fixed << setprecision(16) << 0 << '\n';
+		}
+	}
+}
 
 void out_console(int n) {
 
@@ -432,7 +492,7 @@ int main()
 	build_portrait();
 	build_matrix();
 
-	out_console(n);
+	//out_console(n);
 
 
 	//cout << "Enter method(0,1) 0-Jacobi, 1-Gauss_Seidel\n";
@@ -443,7 +503,7 @@ int main()
 
 
 	out_file(n);
-
+	analytic();
 
 	for (int i = 0; i < countDiag; i++)
 	{
