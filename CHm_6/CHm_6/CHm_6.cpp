@@ -611,4 +611,9 @@ int main()
 	delete[] ind;
 	delete[] vect;
 	delete[] fict;
+	delete[] kray_type;
+	delete[] kray_func;
+	delete[] initialApprox;
+	delete[] new_initialApprox;
+	delete[] result;
 }
