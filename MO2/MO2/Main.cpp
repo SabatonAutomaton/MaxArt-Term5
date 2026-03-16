@@ -1,9 +1,11 @@
 #include "MSGFR.h"
+#include "Broyden.h"
 #include <iostream>
 #include <iomanip>
 int main( )
 {
    MSGFR msgfr;
+   Broyden broyden;
    msgfr.Init( 2 );
    double *res;
    res = msgfr.Solver( );
