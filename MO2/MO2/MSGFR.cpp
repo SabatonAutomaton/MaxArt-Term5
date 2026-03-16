@@ -7,11 +7,49 @@
 void MSGFR::Init( int n1 )
 {
    n = n1;
-   x0 = new double[2] { 6, 5};
+   x0 = new double[2] { 0, 0};
    sk = ops.MultVecScal(f.gradFunc( x0 ), -1 );
    sk_1 = new double[n];
    xk = new double[n];
    xk_1 = new double[n];
+}
+
+void MSGFR::FindInterval(double& a, double& b)
+{
+    double h = 0.1;
+    double lambda0 = 0;
+
+    double f0 = f.funcInDirection(x0, lambda0, sk);
+    double f1 = f.funcInDirection(x0, lambda0 + h, sk);
+
+    if (f1 > f0)
+        h = -h;
+
+    double lambda_prev = lambda0;
+    double lambda_curr = lambda0 + h;
+
+    int iter = 0;
+
+    while (iter < 1000)   // защита от бесконечного цикла
+    {
+        double f_prev = f.funcInDirection(x0, lambda_prev, sk);
+        double f_curr = f.funcInDirection(x0, lambda_curr, sk);
+
+        if (f_curr > f_prev)
+        {
+            a = std::min(lambda_prev, lambda_curr);
+            b = std::max(lambda_prev, lambda_curr);
+            return;
+        }
+
+        lambda_prev = lambda_curr;
+        lambda_curr += h;
+        h *= 2;
+        iter++;
+    }
+
+    a = 0;
+    b = 1;
 }
 
 double *MSGFR::Solver( )
@@ -21,8 +59,9 @@ double *MSGFR::Solver( )
    file1 << "i\t" << "x\t" << "y\t" << "f\t" << "s1\t" << "s2\t" << "lambda\t" << "|xi - xi-1|\t" << "|yi - yi-1|\t" << "|fi - fi-1|\t" << "angle\t" << "grad1\tgrad2" << std::endl;
    std::ofstream file2( "out2.txt" );
    file2 << 0 << ' ' << x0[0] << ' ' << x0[1] << std::endl;
-   double a = 0, b = 10;
-   lambdak = Min( eps1, a, b );
+   double a, b;
+   FindInterval(a, b);
+   lambdak = Min(eps1, a, b);
    xk = ops.AddVec( x0, ops.MultVecScal( sk, lambdak ) );
    xk_1 = x0;
    int k = 0;
@@ -32,6 +71,7 @@ double *MSGFR::Solver( )
       {
          sk = ops.MultVecScal( f.gradFunc( xk ), -1 );
       }
+      FindInterval(a, b);
       lambdak = Min( eps1, a, b );
       for ( int i = 0; i < n; i++ ) xk_1[i] = xk[i];
       xk = ops.AddVec( xk_1, ops.MultVecScal( sk, lambdak ) );
@@ -92,5 +132,6 @@ double MSGFR::Min( double eps, double an, double bn )
    }
    return x;
 }
+
 
 

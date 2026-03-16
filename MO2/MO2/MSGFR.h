@@ -18,6 +18,7 @@ class MSGFR
    VecOperations ops;
 public:
    void Init( int n );
+   void FindInterval(double& a, double& b);
    double *Solver( );
    double CalcW( );
    double Min( double eps, double an, double bn );

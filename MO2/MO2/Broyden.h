@@ -17,6 +17,7 @@ class Broyden
    MatrixOperations opsMat;
 public:
    void Init( int n1 );
+   void FindInterval(double& a, double& b);
    double *Solver( );
    void CalcEtak( );
    double Min( double eps, double an, double bn );
