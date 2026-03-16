@@ -7,7 +7,7 @@
 void MSGFR::Init( int n1 )
 {
    n = n1;
-   x0 = new double[2] { 0, -1 };
+   x0 = new double[2] { 0.5, 0.5 };
    sk = ops.MultVecScal( f.gradFunc( x0 ), -1 );
    sk_1 = new double[n];
    xk = new double[n];
