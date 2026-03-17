@@ -21,5 +21,6 @@ public:
    double *Solver( );
    void CalcEtak( );
    double Min( double eps, double an, double bn );
+   double GoldenRatio( double eps, double an, double bn );
 };
 

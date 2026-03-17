@@ -7,7 +7,7 @@
 void MSGFR::Init( int n1 )
 {
    n = n1;
-   x0 = new double[2] { 0, 0};
+   x0 = new double[2] { 5, 6};
    sk = ops.MultVecScal(f.gradFunc( x0 ), -1 );
    sk_1 = new double[n];
    xk = new double[n];
@@ -17,7 +17,7 @@ void MSGFR::Init( int n1 )
 void MSGFR::FindInterval(double& a, double& b)
 {
     double h = 0.1;
-    double lambda0 = 0;
+    double lambda0 = 0.5;
 
     double f0 = f.funcInDirection(x0, lambda0, sk);
     double f1 = f.funcInDirection(x0, lambda0 + h, sk);
@@ -61,7 +61,7 @@ double *MSGFR::Solver( )
    file2 << 0 << ' ' << x0[0] << ' ' << x0[1] << std::endl;
    double a, b;
    FindInterval(a, b);
-   lambdak = Min(eps1, a, b);
+   lambdak = GoldenRatio(eps1, a, b);
    xk = ops.AddVec( x0, ops.MultVecScal( sk, lambdak ) );
    xk_1 = x0;
    int k = 0;
@@ -72,7 +72,7 @@ double *MSGFR::Solver( )
          sk = ops.MultVecScal( f.gradFunc( xk ), -1 );
       }
       FindInterval(a, b);
-      lambdak = Min( eps1, a, b );
+      lambdak = GoldenRatio( eps1, a, b );
       for ( int i = 0; i < n; i++ ) xk_1[i] = xk[i];
       xk = ops.AddVec( xk_1, ops.MultVecScal( sk, lambdak ) );
       sk_1 = sk;
@@ -133,5 +133,42 @@ double MSGFR::Min( double eps, double an, double bn )
    return x;
 }
 
+
+double MSGFR::GoldenRatio( double eps, double an, double bn )
+{
+   double x, x1, x2;
+   int n = 1;
+   double const C = 0.38196601125010515;
+   x1 = an + C * ( bn - an );
+   x2 = bn - C * ( bn - an );
+   double f1 = f.funcInDirection( xk, x1, sk );
+   double f2 = f.funcInDirection( xk, x2, sk );
+   while ( bn - an >= eps )
+   {
+      x = 0.5 * ( an + bn );
+      n++;
+      if ( f1 < f2 )
+      {
+         bn = x2;
+         x2 = x1;
+         f2 = f1;
+         x1 = an + C * ( bn - an );
+         f1 = f.funcInDirection( xk, x1, sk );
+      }
+      else if ( f1 > f2 )
+      {
+         an = x1;
+         x1 = x2;
+         f1 = f2;
+         x2 = bn - C * ( bn - an );
+         f2 = f.funcInDirection( xk, x2, sk );
+      }
+      else
+      {
+         break;
+      }
+   }
+   return x;
+}
 
 

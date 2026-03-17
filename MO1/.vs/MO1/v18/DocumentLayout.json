@@ -1,13 +1,13 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\artyo\\source\\repos\\MaxArt-Term5\\",
+  "WorkspaceRootPath": "C:\\Users\\artyo\\OneDrive\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\GitHub\\MaxArt-Term62\\MO1\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{2D31BB7B-6E35-4E07-ACF8-93A9345D7D36}|MO1.vcxproj|C:\\Users\\artyo\\source\\repos\\MaxArt-Term5\\Main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{2D31BB7B-6E35-4E07-ACF8-93A9345D7D36}|MO1.vcxproj|C:\\Users\\artyo\\OneDrive\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\GitHub\\MaxArt-Term62\\MO1\\Main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{2D31BB7B-6E35-4E07-ACF8-93A9345D7D36}|MO1.vcxproj|solutionrelative:Main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2D31BB7B-6E35-4E07-ACF8-93A9345D7D36}|MO1.vcxproj|C:\\Users\\artyo\\source\\repos\\MaxArt-Term5\\in.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "AbsoluteMoniker": "D:0:0:{2D31BB7B-6E35-4E07-ACF8-93A9345D7D36}|MO1.vcxproj|C:\\Users\\artyo\\OneDrive\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\GitHub\\MaxArt-Term62\\MO1\\in.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
       "RelativeMoniker": "D:0:0:{2D31BB7B-6E35-4E07-ACF8-93A9345D7D36}|MO1.vcxproj|solutionrelative:in.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
     }
   ],
@@ -20,10 +20,6 @@
           "DockedWidth": 552,
           "SelectedChildIndex": 9,
           "Children": [
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{73068c07-fba1-453f-99ae-6edf972119b2}"
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:129:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
@@ -42,10 +38,6 @@
             },
             {
               "$type": "Bookmark",
-              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
-            },
-            {
-              "$type": "Bookmark",
               "Name": "ST:130:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
             },
             {
@@ -53,27 +45,34 @@
               "Name": "ST:129:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
             },
             {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{73068c07-fba1-453f-99ae-6edf972119b2}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
               "$type": "Document",
               "DocumentIndex": 1,
               "Title": "in.txt",
-              "DocumentMoniker": "C:\\Users\\artyo\\source\\repos\\MaxArt-Term5\\in.txt",
+              "DocumentMoniker": "C:\\Users\\artyo\\OneDrive\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\GitHub\\MaxArt-Term62\\MO1\\in.txt",
               "RelativeDocumentMoniker": "in.txt",
-              "ToolTip": "C:\\Users\\artyo\\source\\repos\\MaxArt-Term5\\in.txt",
+              "ToolTip": "C:\\Users\\artyo\\OneDrive\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\GitHub\\MaxArt-Term62\\MO1\\in.txt",
               "RelativeToolTip": "in.txt",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
-              "WhenOpened": "2026-02-21T12:30:39.817Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-21T12:30:39.817Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "Main.cpp",
-              "DocumentMoniker": "C:\\Users\\artyo\\source\\repos\\MaxArt-Term5\\Main.cpp",
+              "DocumentMoniker": "C:\\Users\\artyo\\OneDrive\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\GitHub\\MaxArt-Term62\\MO1\\Main.cpp",
               "RelativeDocumentMoniker": "Main.cpp",
-              "ToolTip": "C:\\Users\\artyo\\source\\repos\\MaxArt-Term5\\Main.cpp",
+              "ToolTip": "C:\\Users\\artyo\\OneDrive\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\GitHub\\MaxArt-Term62\\MO1\\Main.cpp",
               "RelativeToolTip": "Main.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAARAAAAAAAAAA==",
+              "ViewState": "AgIAADsAAAAAAAAAAAAkwFUAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2026-02-21T12:15:29.963Z",
               "EditorCaption": ""

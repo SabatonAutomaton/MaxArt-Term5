@@ -13,7 +13,7 @@ class MSGFR
    double *xk;
    double *xk_1;
    double eps = 1e-7;
-   double eps1 = 1e-7;
+   double eps1 = 1e-16;
    Func f;
    VecOperations ops;
 public:
@@ -22,6 +22,6 @@ public:
    double *Solver( );
    double CalcW( );
    double Min( double eps, double an, double bn );
-   
+   double GoldenRatio( double eps, double an, double bn );
 };
 

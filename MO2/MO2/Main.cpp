@@ -6,9 +6,9 @@ int main( )
 {
    MSGFR msgfr;
    Broyden broyden;
-   broyden.Init( 2 );
+   msgfr.Init( 2 );
    double *res;
-   res = broyden.Solver( );
+   res = msgfr.Solver( );
    for ( int i = 0; i < 2; i++ )
       std::cout<<std::setprecision(16) << res[i] << std::endl;
 }
