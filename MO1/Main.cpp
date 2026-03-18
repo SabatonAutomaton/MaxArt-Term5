@@ -6,7 +6,7 @@
 
 double func( double x )
 {
-   return ( x - 3 ) * ( x - 3 );
+   return x*x;
 }
 
 double dichotomy( double eps, double an, double bn )
@@ -117,7 +117,7 @@ double Fibonacci( double eps, double a0, double b0 )
    x1 = a0 + fibonacciFunc[n - 1] / fibonacciFunc[n + 1] * ( b0 - a0 );
    x2 = a0 + fibonacciFunc[n] / fibonacciFunc[n + 1] * ( b0 - a0 );
    f1 = func( x1 );
-   f2 = func( x2 ); 
+   f2 = func( x2 );
    file << a0 << '\n' << b0 << '\n';
    for ( ; k <= n; k++ )
    {
@@ -151,6 +151,54 @@ double Fibonacci( double eps, double a0, double b0 )
    return x;
 }
 
+double parabola( double eps, double an, double bn )
+{
+   double x1 = an, x2 = ( an + bn ) / 2.0, x3 = bn;
+   double x = x2 + 10 *eps;
+   double f, f1 = func( x1 ), f2 = func( x2 ), f3 = func( x3 );
+   double numer, denom; // числитель, знаменатель
+   int k = 0;
+   while ( fabs( x2 - x ) >= eps )
+   {
+      numer = ( x2 - x1 ) * ( x2 - x1 ) * ( f2 - f3 ) - ( x2 - x3 ) * ( x2 - x3 ) * ( f2 - f1 );
+      denom = ( x2 - x1 ) * ( f2 - f3 ) - ( x2 - x3 ) * ( f2 - f1 );
+      if ( denom == 0 )
+         x = x2;
+      else
+         x = x2 - 0.5 * numer / denom;
+      f = func( x );
+      if ( x <= x2 )
+         if ( f <= f2 )
+         {
+            x3 = x2;
+            f3 = f2;
+            x2 = x;
+            f2 = f;
+         }
+         else
+         {
+            x1 = x;
+            f1 = f;
+         }
+      else
+         if ( f <= f2 )
+         {
+            x1 = x2;
+            x2 = x;
+            f1 = f2;
+            f2 = f;
+         }
+         else
+         {
+            x3 = x;
+            f3 = f;
+         }
+      k++;
+      std::cout << k << '\t' << std::setprecision( 16 ) << x << std::endl;
+   }
+   return x2;
+}
+
 int main( )
 {
    double eps, an, bn;
@@ -164,5 +212,7 @@ int main( )
    goldenRatio( eps, an, bn );
    std::cout << "Fibonacci" << std::endl;
    Fibonacci( eps, an, bn );
+   std::cout << "parabola" << std::endl;
+   parabola( eps, an, bn );
    return 0;
 }
