@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 # =========================
 def func(x, y):
     #return 100*(y-x)*(y-x) + (1-x)*(1-x)
-    #return 100*(y-x*x)*(y-x*x) + (1-x)*(1-x)
+    # return 100*(y-x*x)*(y-x*x) + (1-x)*(1-x)
      term1 = 2 / (1 + ((x - 1) / 2)**2 + ((y - 2) / 1)**2)
      term2 = 1 / (1 + ((x - 3) / 3)**2 + ((y - 1) / 3)**2)
      return term1 + term2

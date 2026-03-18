@@ -20,40 +20,54 @@ void Broyden::Init( int n1 )
 
 void Broyden::FindInterval( double &a, double &b )
 {
-   double h = 0.1;
-   double lambda0 = 0.5;
+   const double H0 = 0.1;        // Начальный шаг
+   const double TAU = 2.0;        // Множитель увеличения шага
+   const int MAX_ITER = 100;      // Максимальное число итераций
 
-   double f0 = f.funcInDirectionEta( xk, lambda0, etak );
-   double f1 = f.funcInDirectionEta( xk, lambda0 + h, etak );
+   double lambda = 0.0;           // Текущая точка
+   double h = H0;                 // Текущий шаг
 
-   if ( f1 > f0 )
-      h = -h;
+   double f_prev = f.funcInDirectionEta( xk, lambda - h, etak );
+   
+   double f_curr = f.funcInDirectionEta( xk, lambda, etak );
+   double f_next = f.funcInDirectionEta( xk, lambda + h, etak );
 
-   double lambda_prev = lambda0;
-   double lambda_curr = lambda0 + h;
-
-   int iter = 0;
-
-   while ( iter < 100 )
+   if ( f_prev < f_curr )
    {
-      double f_prev = f.funcInDirectionEta( xk, lambda_prev, etak );
-      double f_curr = f.funcInDirectionEta( xk, lambda_curr, etak );
-
-      if ( f_curr > f_prev )
-      {
-         a = std::min( lambda_prev, lambda_curr );
-         b = std::max( lambda_prev, lambda_curr );
-         return;
-      }
-
-      lambda_prev = lambda_curr;
-      lambda_curr += h;
-      h *= 2;
-      iter++;
+      h = -h;
+   }
+   else if ( f_next < f_curr ) { }
+   else
+   {
+      a = lambda - h;
+      b = lambda + h;
+      return;
    }
 
-   a = 0;
-   b = 1;
+   int iter = 0;
+   double lambda_prev = lambda;
+   double lambda_curr = lambda + h;
+   double f_curr_val, f_next_val;
+
+   while ( iter < MAX_ITER ) {
+      f_curr_val = f.funcInDirectionEta( xk, lambda_curr, etak );
+      f_next_val = f.funcInDirectionEta( xk, lambda_curr + h, etak );
+
+
+      if ( f_curr_val < f_next_val ) {
+         a = std::min( lambda_prev, lambda_curr + h );
+         b = std::max( lambda_prev, lambda_curr + h );
+
+         return;
+      }
+      lambda_prev = lambda_curr;
+      lambda_curr = lambda_curr + h;
+      h *= TAU;
+
+      iter++;
+   }
+   a = 0.0;
+   b = 10.0;
 }
 
 double *Broyden::Solver( )
@@ -70,7 +84,7 @@ double *Broyden::Solver( )
    {
       for ( int i = 0; i < n; i++ ) xk_1[i] = xk[i];
       FindInterval( a, b );
-      lambdak = Min( eps1, a, b );
+      lambdak = Parabola( eps1, a, b );
       xk = opsVec.AddVec( xk_1, opsVec.MultVecScal( opsMat.MultMatVec( etak, f.gradFunc( xk_1 ) ), -lambdak ) );
       CalcEtak( );
       k++;
@@ -174,4 +188,52 @@ double Broyden::GoldenRatio( double eps, double an, double bn )
       }
    }
    return x;
+}
+
+double Broyden::Parabola( double eps, double an, double bn )
+{
+   double x1 = an, x2 = ( an + bn ) / 2.0, x3 = bn;
+   double x = x2 + 10 * eps;
+   double f0, f1 = f.funcInDirectionEta( xk, x1, etak ), f2 = f.funcInDirectionEta( xk, x2, etak ), f3 = f.funcInDirectionEta( xk, x3, etak );
+   double numer, denom; // числитель, знаменатель
+   int k = 0;
+   while ( fabs( x2 - x ) >= eps )
+   {
+      numer = ( x2 - x1 ) * ( x2 - x1 ) * ( f2 - f3 ) - ( x2 - x3 ) * ( x2 - x3 ) * ( f2 - f1 );
+      denom = ( x2 - x1 ) * ( f2 - f3 ) - ( x2 - x3 ) * ( f2 - f1 );
+      if ( denom == 0 )
+         x = x2;
+      else
+         x = x2 - 0.5 * numer / denom;
+      f0 = f.funcInDirectionEta( xk, x, etak );
+      if ( x <= x2 )
+         if ( f0 <= f2 )
+         {
+            x3 = x2;
+            f3 = f2;
+            x2 = x;
+            f2 = f0;
+         }
+         else
+         {
+            x1 = x;
+            f1 = f0;
+         }
+      else
+         if ( f0 <= f2 )
+         {
+            x1 = x2;
+            x2 = x;
+            f1 = f2;
+            f2 = f0;
+         }
+         else
+         {
+            x3 = x;
+            f3 = f0;
+         }
+      k++;
+   }
+   std::cout << k << std::endl;
+   return x2;
 }

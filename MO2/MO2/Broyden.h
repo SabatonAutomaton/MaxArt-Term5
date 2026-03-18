@@ -22,5 +22,6 @@ public:
    void CalcEtak( );
    double Min( double eps, double an, double bn );
    double GoldenRatio( double eps, double an, double bn );
+   double Parabola( double eps, double an, double bn );
 };
 

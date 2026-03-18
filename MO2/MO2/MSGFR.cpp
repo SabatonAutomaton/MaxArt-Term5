@@ -7,49 +7,105 @@
 void MSGFR::Init( int n1 )
 {
    n = n1;
-   x0 = new double[2] { 5, 6};
-   sk = ops.MultVecScal(f.gradFunc( x0 ), -1 );
+   x0 = new double[2] { 5, 6 };
+   sk = ops.MultVecScal( f.gradFunc( x0 ), -1 );
    sk_1 = new double[n];
    xk = new double[n];
    xk_1 = new double[n];
+   xk_old = new double[n];
+   for ( int i = 0; i < n; i++ )
+   {
+      xk[i] = x0[i];
+      xk_1[i] = x0[i];
+      xk_old[i] = x0[i];
+   }
 }
 
-void MSGFR::FindInterval(double& a, double& b)
+//void MSGFR::FindInterval( double &a, double &b, double *x )
+//{
+//   double h = 0.1;
+//   double lambda = 0.5;
+//
+//   double f_current = f.funcInDirection( x, lambda, sk );
+//   double f_next = f.funcInDirection( x, lambda + h, sk );
+//
+//   // Определяем направление убывания
+//   if ( f_next > f_current ) {
+//      h = -h;
+//      f_next = f.funcInDirection( x, lambda + h, sk );
+//   }
+//
+//   // Поиск интервала, где функция начинает возрастать
+//   while ( f_next < f_current ) {
+//      lambda += h;
+//      f_current = f_next;
+//      h *= 2.0;
+//      f_next = f.funcInDirection( x, lambda + h, sk );
+//
+//      // Защита от зацикливания
+//      if ( fabs( h ) > 100 ) break;
+//   }
+//
+//   // Устанавливаем границы интервала
+//   if ( h > 0 ) {
+//      a = lambda;
+//      b = lambda + h;
+//   }
+//   else {
+//      a = lambda + h;
+//      b = lambda;
+//   }
+//}
+
+void MSGFR::FindInterval( double &a, double &b )
 {
-    double h = 0.1;
-    double lambda0 = 0.5;
+   const double H0 = 0.1;        // Начальный шаг
+   const double TAU = 2.0;        // Множитель увеличения шага
+   const int MAX_ITER = 100;      // Максимальное число итераций
 
-    double f0 = f.funcInDirection(x0, lambda0, sk);
-    double f1 = f.funcInDirection(x0, lambda0 + h, sk);
+   double lambda = 0.0;           // Текущая точка
+   double h = H0;                 // Текущий шаг
 
-    if (f1 > f0)
-        h = -h;
+   double f_prev = f.funcInDirection( xk, lambda - h, sk );
+   double f_curr = f.funcInDirection( xk, lambda, sk );
+   double f_next = f.funcInDirection( xk, lambda + h, sk );
 
-    double lambda_prev = lambda0;
-    double lambda_curr = lambda0 + h;
+   if ( f_prev < f_curr ) 
+   {
+      h = -h;
+   }
+   else if ( f_next < f_curr ) { }
+   else 
+   {
+      a = lambda - h;
+      b = lambda + h;
+      return;
+   }
 
-    int iter = 0;
+   int iter = 0;
+   double lambda_prev = lambda;
+   double lambda_curr = lambda + h;
+   double f_curr_val, f_next_val;
 
-    while (iter < 1000)   // защита от бесконечного цикла
-    {
-        double f_prev = f.funcInDirection(x0, lambda_prev, sk);
-        double f_curr = f.funcInDirection(x0, lambda_curr, sk);
+   while ( iter < MAX_ITER ) {
+      f_curr_val = f.funcInDirection( xk, lambda_curr, sk );
+      f_next_val = f.funcInDirection( xk, lambda_curr + h, sk );
 
-        if (f_curr > f_prev)
-        {
-            a = std::min(lambda_prev, lambda_curr);
-            b = std::max(lambda_prev, lambda_curr);
-            return;
-        }
 
-        lambda_prev = lambda_curr;
-        lambda_curr += h;
-        h *= 2;
-        iter++;
-    }
+      if ( f_curr_val < f_next_val ) {
+         a = std::min( lambda_prev, lambda_curr + h );
+         b = std::max( lambda_prev, lambda_curr + h );
 
-    a = 0;
-    b = 1;
+         return;
+      }
+      lambda_prev = lambda_curr;
+      lambda_curr = lambda_curr + h;
+      h *= TAU;
+
+      iter++;
+   }
+   a = 0.0;
+   b = 10.0;
 }
 
 double *MSGFR::Solver( )
@@ -59,25 +115,25 @@ double *MSGFR::Solver( )
    file1 << "i\t" << "x\t" << "y\t" << "f\t" << "s1\t" << "s2\t" << "lambda\t" << "|xi - xi-1|\t" << "|yi - yi-1|\t" << "|fi - fi-1|\t" << "angle\t" << "grad1\tgrad2" << std::endl;
    std::ofstream file2( "out2.txt" );
    file2 << 0 << ' ' << x0[0] << ' ' << x0[1] << std::endl;
-   double a, b;
-   FindInterval(a, b);
-   lambdak = GoldenRatio(eps1, a, b);
-   xk = ops.AddVec( x0, ops.MultVecScal( sk, lambdak ) );
-   xk_1 = x0;
+   double a = -1, b = 1;
+   //FindInterval( a, b, x0 );
+   //lambdak = Parabola( eps1, a, b );
+   //xk = ops.AddVec( x0, ops.MultVecScal( sk, lambdak ) );
    int k = 0;
    while ( ops.DotProduct( sk, sk ) >= eps )
    {
-      if ( k % n1 == 0 )
+      if ( (k+1) % n1 == 0 )
       {
          sk = ops.MultVecScal( f.gradFunc( xk ), -1 );
       }
-      FindInterval(a, b);
-      lambdak = GoldenRatio( eps1, a, b );
-      for ( int i = 0; i < n; i++ ) xk_1[i] = xk[i];
-      xk = ops.AddVec( xk_1, ops.MultVecScal( sk, lambdak ) );
-      sk_1 = sk;
+      FindInterval( a, b);
+      lambdak = Parabola( eps1, a, b );
+      for ( int i = 0; i < n; i++ ) xk_old[i] = xk[i];
+      xk = ops.AddVec( xk, ops.MultVecScal( sk, lambdak ) );
+      for ( int i = 0; i < n; i++ ) xk_1[i] = xk_old[i];
+      for ( int i = 0; i < n; i++ ) sk_1[i] = sk[i];
       double wk = CalcW( );
-      sk = ops.AddVec( ops.MultVecScal( f.gradFunc( xk ), -1 ), ops.MultVecScal( sk_1, wk ) );
+      sk = ops.AddVec( ops.MultVecScal( f.gradFunc( xk ), -1 ), ops.MultVecScal( sk, wk ) );
       k++;
       std::cout << k << "\t";
       file1 << k << "\t";
@@ -101,7 +157,9 @@ double *MSGFR::Solver( )
 
 double MSGFR::CalcW( )
 {
-   return ops.DotProduct( f.gradFunc( xk ), f.gradFunc( xk ) ) / ops.DotProduct( f.gradFunc( xk_1 ), f.gradFunc( xk_1 ) );
+   double a = ops.DotProduct( f.gradFunc( xk ), f.gradFunc( xk ) );
+   double b = ops.DotProduct( f.gradFunc( xk_1 ), f.gradFunc( xk_1 ) );
+   return a / b;
 }
 
 double MSGFR::Min( double eps, double an, double bn )
@@ -169,6 +227,54 @@ double MSGFR::GoldenRatio( double eps, double an, double bn )
       }
    }
    return x;
+}
+
+double MSGFR::Parabola( double eps, double an, double bn )
+{
+   double x1 = an, x2 = ( an + bn ) / 2.0, x3 = bn;
+   double x = x2 + 10 * eps;
+   double f0, f1 = f.funcInDirection( xk, x1, sk ), f2 = f.funcInDirection( xk, x2, sk ), f3 = f.funcInDirection( xk, x3, sk );
+   double numer, denom; // числитель, знаменатель
+   int k = 0;
+   while ( fabs( x2 - x ) >= eps )
+   {
+      numer = ( x2 - x1 ) * ( x2 - x1 ) * ( f2 - f3 ) - ( x2 - x3 ) * ( x2 - x3 ) * ( f2 - f1 );
+      denom = ( x2 - x1 ) * ( f2 - f3 ) - ( x2 - x3 ) * ( f2 - f1 );
+      if ( denom == 0 )
+         x = x2;
+      else
+         x = x2 - 0.5 * numer / denom;
+      f0 = f.funcInDirection( xk, x, sk );
+      if ( x <= x2 )
+         if ( f0 <= f2 )
+         {
+            x3 = x2;
+            f3 = f2;
+            x2 = x;
+            f2 = f0;
+         }
+         else
+         {
+            x1 = x;
+            f1 = f0;
+         }
+      else
+         if ( f0 <= f2 )
+         {
+            x1 = x2;
+            x2 = x;
+            f1 = f2;
+            f2 = f0;
+         }
+         else
+         {
+            x3 = x;
+            f3 = f0;
+         }
+      k++;
+   }
+   std::cout << k << std::endl;
+   return x2;
 }
 
 

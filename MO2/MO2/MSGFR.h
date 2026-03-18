@@ -12,16 +12,18 @@ class MSGFR
    double *x0;
    double *xk;
    double *xk_1;
+   double *xk_old;
    double eps = 1e-7;
    double eps1 = 1e-16;
    Func f;
    VecOperations ops;
 public:
    void Init( int n );
-   void FindInterval(double& a, double& b);
+   void FindInterval(double& a, double& b );
    double *Solver( );
    double CalcW( );
    double Min( double eps, double an, double bn );
    double GoldenRatio( double eps, double an, double bn );
+   double Parabola( double eps, double an, double bn );
 };
 
