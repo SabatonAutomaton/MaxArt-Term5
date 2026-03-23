@@ -6,11 +6,15 @@
 double SimpleIteration::u( double x )
 {
    return x*x;
+   //return 2;
+   //return x;
 }
 
 double SimpleIteration::f( double x )
 {
    return x * x - 2;
+   //return 2;
+   //return x;
 }
 
 
@@ -42,7 +46,7 @@ void SimpleIteration::Condition1( )
    if ( elements[elemCount - 1].cond == 1 )
    {
       matrix.di[n - 1] = 1;
-      b[n - 1] = Condition( 1, 3 );;
+      b[n - 1] = Condition( 1, mesh.meshX[elemCount] );;
       for ( int i = 0; i < 2; i++ )
       {
          matrix.ggl[n - 1][0] = 0;

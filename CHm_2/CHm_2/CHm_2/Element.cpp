@@ -35,9 +35,9 @@ void Element::BuildLocalMatrix( )
       double psi1 = basis.basis1( quadrature[i][0] );
       double psi2 = basis.basis2( quadrature[i][0] );
       double psi3 = basis.basis3( quadrature[i][0] );
-      double gradPsi1 = basis.basis1Grad( quadrature[i][0] );
-      double gradPsi2 = basis.basis2Grad( quadrature[i][0] );
-      double gradPsi3 = basis.basis3Grad( quadrature[i][0] );
+      double gradPsi1 = basis.basis1Grad( quadrature[i][0] ) / jacobian;
+      double gradPsi2 = basis.basis2Grad( quadrature[i][0] ) / jacobian;
+      double gradPsi3 = basis.basis3Grad( quadrature[i][0] ) / jacobian;
       double lambdas = lambda( uh( quadrature[i][0] ) );
       localMatrix[0][0] += wj * ( lambdas * gradPsi1 * gradPsi1 + sigma * psi1 * psi1 + beta( uh( quadrature[i][0] ) ) * psi1 * psi1 );
       localMatrix[0][1] += wj * ( lambdas * gradPsi1 * gradPsi2 + sigma * psi1 * psi2 + beta( uh( quadrature[i][0] ) ) * psi1 * psi2 );
