@@ -13,7 +13,7 @@ void Mesh::InputMeshes( )
    }
 
    f >> uniformX >> n_x >> a_x >> b_x;
-   meshX = new double[n_x];
+   meshX.resize(n_x);
    if ( uniformX )
       CalculateUniformMesh( meshX, a_x, b_x, n_x );
    else
@@ -23,7 +23,7 @@ void Mesh::InputMeshes( )
    }
 
    f >> uniformT >> n_t >> a_t >> b_t;
-   meshT = new double[n_t];
+   meshT.resize( n_t );
    if ( uniformT )
       CalculateUniformMesh( meshT, a_t, b_t, n_t );
    else
@@ -33,14 +33,14 @@ void Mesh::InputMeshes( )
    }
 }
 
-void Mesh::CalculateUniformMesh( double *mesh, double a, double b, int n )
+void Mesh::CalculateUniformMesh( std::vector<double> &mesh, double a, double b, int n )
 {
    double h = ( b - a ) / ( n - 1 );
    for ( int i = 0; i < n; i++ )
       mesh[i] = a + i * h;
 }
 
-void Mesh::CalculateNonUniformMesh( double *mesh, double a, double b, int n, double q )
+void Mesh::CalculateNonUniformMesh( std::vector<double> &mesh, double a, double b, int n, double q )
 {
    double h = ( b - a ) * ( 1 - q ) / ( 1 - pow( q, n - 1 ) );
    double hi = h;

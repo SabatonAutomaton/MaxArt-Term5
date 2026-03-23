@@ -1,43 +1,49 @@
-# Prerequisites
-*.d
+## --- Visual Studio ---
+# Пользовательские настройки (окна, точки остановки и т.д.)
+*.user
+*.suo
+*.sln.docstates
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
+# Папка с базой данных IntelliSense и кэшем (самая тяжелая)
+.vs/
+
+# Выходные папки компиляции (бинарники и объекты)
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+ARM/
+ARM64/
+
+# Файлы промежуточной сборки
 *.obj
-
-# Precompiled Headers
-*.gch
 *.pch
-
-# Linker files
-*.ilk
-
-# Debugger Files
+*.tlog
+*.lastbuildstate
+*.idb
 *.pdb
+*.ilk
+*.exp
+*.res
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+# Файлы анализа и профилирования
+*.psess
+*.vsp
+*.vspx
+*.sap
 
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
+## --- Общие для C ---
+# Библиотеки
 *.lib
-
-# Executables
+*.dll
 *.exe
-*.out
-*.app
 
-# debug information files
-*.dwo
+# Временные файлы компилятора MSVC
+*.sdf
+*.opensdf
+*.VC.db
+*.VC.opendb
 
-*.vs
+## --- Системные файлы ---
+.DS_Store
+Thumbs.db

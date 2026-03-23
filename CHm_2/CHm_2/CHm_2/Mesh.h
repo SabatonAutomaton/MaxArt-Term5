@@ -1,9 +1,10 @@
 #pragma once
+#include <vector>
 class Mesh
 {
 public:
-   double *meshX = nullptr;
-   double *meshT = nullptr;
+   std::vector<double> meshX;
+   std::vector<double> meshT;
    int n_x, n_t;
 
    bool uniformX = true;
@@ -11,7 +12,7 @@ public:
 
    void InputMeshes( );
 
-   void CalculateUniformMesh( double *mesh, double a, double b, int n);
-   void CalculateNonUniformMesh( double *mesh, double a, double b, int n, double q );
+   void CalculateUniformMesh( std::vector<double> &mesh, double a, double b, int n);
+   void CalculateNonUniformMesh( std::vector<double> &mesh, double a, double b, int n, double q );
 };
 
