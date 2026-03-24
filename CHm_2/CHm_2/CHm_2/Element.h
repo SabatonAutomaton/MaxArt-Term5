@@ -16,11 +16,13 @@ public:
 
    //параметры задачи
    double lambda( double u );
+   double dlambda(double u);
    double sigma = 1;
    std::vector<double> f;
 
    double theta( double u );
    double beta( double u );
+   double dbeta(double u);
    double uBeta( double u );
    double uh( double x );
 
@@ -34,6 +36,7 @@ public:
 
    void BuildLocalMatrix( );
    void BuildLocalB( );
-
+   void BuildLocalMatrixNewton(std::vector<double> q_0);
+   void BuildLocalBNewton(std::vector<double> q_0);
 };
 
