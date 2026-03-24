@@ -1,8 +1,8 @@
 #include "Element.h"
 
-double Element::lambda( double u )
+double Element::lambda( double x )
 {
-   return 1;
+   return lambdaNodes[0] * basis.basis1( x ) + lambdaNodes[1] * basis.basis2( x ) + lambdaNodes[2] * basis.basis3( x );;
 }
 
 double Element::theta( double u )

@@ -4,6 +4,7 @@
 #include "Element.h"
 #include "Matrix.h"
 #include "LU.h"
+#include "MatrixOperations.h"
 
 class SimpleIteration
 {
@@ -19,24 +20,33 @@ public:
    void Condition1( );
 
    std::vector<double> q;
+   std::vector<double> qOLd;
 
    //матрица
    Matrix matrix;
 
    //вектор правой части
    std::vector<double> b;
+   std::vector<double> b0;
 
    double deltaT;
+
+   double w = 0.1;
 
    std::vector<Element> elements;
    void Input( );
    void BuildMatrix( );
    void BuildB( );
    void SolveIter( );
+   void Solve( );
+   double CalcResidual( );
    double u(double x );
    double f(double x );
+   double lambda( double u );
+   std::vector<double> lambdaNodes;
 
    Mesh mesh;
    Basis basis;
    LU lu;
+   MatrixOperations ops;
 };

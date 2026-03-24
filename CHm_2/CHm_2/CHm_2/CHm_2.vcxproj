@@ -132,6 +132,7 @@
     <ClCompile Include="Element.cpp" />
     <ClCompile Include="LU.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="MatrixOperations.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="SimpleIteration.cpp" />
   </ItemGroup>
@@ -140,6 +141,7 @@
     <ClInclude Include="Element.h" />
     <ClInclude Include="LU.h" />
     <ClInclude Include="Matrix.h" />
+    <ClInclude Include="MatrixOperations.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="SimpleIteration.h" />
   </ItemGroup>

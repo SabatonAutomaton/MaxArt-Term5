@@ -15,38 +15,51 @@ int main( )
    {
       std::cout << mesh.meshT[i] << std::endl;
    }
+
+
    SimpleIteration simpleIteration;
    simpleIteration.Input( );
-   simpleIteration.SolveIter( );
+   simpleIteration.Solve( );
    for ( int i = 0; i < simpleIteration.n; i++ )
    {
       std::cout << simpleIteration.q[i] << "\t";
    }
-
-   std::cout << std::endl;
-
    int n = simpleIteration.n;
+   //std::cout << std::endl;
+   //std::vector<double> res = simpleIteration.ops.MultMatVec(simpleIteration.matrix,simpleIteration.q);
+   //for ( int i = 0; i < n; i++ )
+   //{
+   //   std::cout << res[i] << "\t";
+   //}
+   //std::cout << std::endl;
+   //for ( int i = 0; i < n; i++ )
+   //{
+   //   std::cout << simpleIteration.b[i] << "\t";
+   //}
+   //std::cout << std::endl;
 
-   //std::cout << "di = ";
-   //for ( int i = 0; i < n; i++ )
-   //{
-   //   std::cout << simpleIteration.matrix.di[i] << "\t";
-   //}
-   //std::cout << std::endl;
-   //std::cout << "al = ";
-   //for ( int i = 0; i < n; i++ )
-   //{
-   //   std::cout << simpleIteration.matrix.ggl[i][0] << "\t" << simpleIteration.matrix.ggl[i][1] << std::endl;
-   //   std::cout << "\n     ";
-   //}
-   //std::cout << std::endl;
-   //std::cout << "au = ";
-   //for ( int i = 0; i < n; i++ )
-   //{
-   //   std::cout << simpleIteration.matrix.ggu[i][0] << "\t" << simpleIteration.matrix.ggu[i][1] << std::endl;
-   //   std::cout << "\n     ";
-   //}
-   //std::cout << std::endl << std::endl;
+   /*simpleIteration.BuildMatrix( );*/
+
+   std::cout << "di = ";
+   for ( int i = 0; i < n; i++ )
+   {
+      std::cout << simpleIteration.matrix.di[i] << "\t";
+   }
+   std::cout << std::endl;
+   std::cout << "al = ";
+   for ( int i = 0; i < n; i++ )
+   {
+      std::cout << simpleIteration.matrix.ggl[i][0] << "\t" << simpleIteration.matrix.ggl[i][1] << std::endl;
+      std::cout << "\n     ";
+   }
+   std::cout << std::endl;
+   std::cout << "au = ";
+   for ( int i = 0; i < n; i++ )
+   {
+      std::cout << simpleIteration.matrix.ggu[i][0] << "\t" << simpleIteration.matrix.ggu[i][1] << std::endl;
+      std::cout << "\n     ";
+   }
+   std::cout << std::endl << std::endl;
 
    std::cout << "Local matrixes:\n";
    for ( int k = 0; k < simpleIteration.elemCount; k++ )
@@ -72,25 +85,25 @@ int main( )
       std::cout << std::endl;
    }
 
-   for ( int i = 0; i < n; i++ )
-   {
-      for ( int j = 0; j < n; j++ )
-      {
-         if ( i == j )
-            std::cout << simpleIteration.matrix.di[i] << "\t";
-         else if ( j == i - 1 )  // вторая поддиагональ
-            std::cout << simpleIteration.matrix.ggl[i][1] << "\t";
-         else if ( j == i - 2 )  // первая поддиагональ
-            std::cout << simpleIteration.matrix.ggl[i][0] << "\t";
-         else if ( j == i + 2 && i != n - 1 )  // первая наддиагональ
-            std::cout << simpleIteration.matrix.ggu[i + 1][0] << "\t";
-         else if ( j == i + 1 && i != n - 1 )  // вторая наддиагональ
-            std::cout << simpleIteration.matrix.ggu[i + 1][1] << "\t";
-         else
-            std::cout << "0\t";
-      }
-      std::cout << std::endl;
-   }
+   //for ( int i = 0; i < n; i++ )
+   //{
+   //   for ( int j = 0; j < n; j++ )
+   //   {
+   //      if ( i == j )
+   //         std::cout << simpleIteration.matrix.di[i] << "\t";
+   //      else if ( j == i - 1 )  // вторая поддиагональ
+   //         std::cout << simpleIteration.matrix.ggl[i][1] << "\t";
+   //      else if ( j == i - 2 )  // первая поддиагональ
+   //         std::cout << simpleIteration.matrix.ggl[i][0] << "\t";
+   //      else if ( j == i + 2 && i != n - 1 )  // первая наддиагональ
+   //         std::cout << simpleIteration.matrix.ggu[i + 1][0] << "\t";
+   //      else if ( j == i + 1 && i != n - 1 )  // вторая наддиагональ
+   //         std::cout << simpleIteration.matrix.ggu[i + 1][1] << "\t";
+   //      else
+   //         std::cout << "0\t";
+   //   }
+   //   std::cout << std::endl;
+   //}
 
    std::cout << "\n\n";
    for ( int i = 0; i < n; i++ )
@@ -116,5 +129,26 @@ int main( )
    //   std::cout << lu.q[i] << "\t";
    //}
 
+   //Matrix A;
+   //A.n = 5;
+   //A.di = { 10,10,10,10,10 };
+   //A.ggl = { {0,0},
+   //          {0,1},
+   //          {2,3},
+   //          {5,6},
+   //          {9,11} };
+   //A.ggu = A.ggl;
+   //A.ggu[1][1] = 0;
+   //A.ggu[2][0] = 0;
+   ///*A.ggl[1][1] = 0;
+   //A.ggl[1][0] = 0;*/
 
+   //std::vector<double> x = { 1,1,1,1,1 };
+
+   //auto y = simpleIteration.ops.MultMatVec( A, x );
+
+   //for ( int i = 0; i < 5; i++ )
+   //{
+   //   std::cout << y[i] << "\t";
+   //}
 }

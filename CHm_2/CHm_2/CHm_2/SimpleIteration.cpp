@@ -5,16 +5,21 @@
 
 double SimpleIteration::u( double x )
 {
-   return x*x;
+   return x;
    //return 2;
    //return x;
 }
 
 double SimpleIteration::f( double x )
 {
-   return x * x - 2;
+   return x - 1;
    //return 2;
    //return x;
+}
+
+double SimpleIteration::lambda( double u )
+{
+   return 1 + 1 * u;
 }
 
 
@@ -23,7 +28,7 @@ double SimpleIteration::Condition( int number, double x )
    switch ( number )
    {
       case 1:
-         return u(x);
+         return x;
          break;
       default:
          return 0;
@@ -79,30 +84,45 @@ void SimpleIteration::Input( )
    matrix.di = std::vector<double>( n, 0.0 );
 
    b.resize( n );
+   lambdaNodes.resize( n );
    for ( int i = 0; i <= elemCount; i++ )
    {
       b[i * 2] = f( mesh.meshX[i] );
+      lambdaNodes[i * 2] = lambda( mesh.meshX[i] );
       if ( i < elemCount )
+      {
          b[i * 2 + 1] = f( ( mesh.meshX[i] + mesh.meshX[i + 1] ) / 2.0 );
-   }
+         lambdaNodes[i * 2 + 1] = lambda( ( mesh.meshX[i] + mesh.meshX[i + 1] ) / 2.0 );
+      }
 
+   }
+   b0 = b;
 
 
    std::vector<double> coords;
    elements.resize( elemCount );
    q = std::vector<double>( n, 0.0 );
-   std::vector<double> localB = std::vector<double>( 3, 0.0 );
+   q[0] = Condition( 1, 0 );
+   q[n - 1] = Condition( 1, mesh.meshX[elemCount] );
+   std::vector<double> localB( 3, 0.0 );
+   std::vector<double> localLambdaNodes( 3, 0.0 );
    for ( int i = 0; i < elemCount; i++ )
    {
       coords = { mesh.meshX[i], mesh.meshX[i + 1] };
       for ( int j = 0; j < 3; j++ )
       {
          if ( i == 0 )
+         {
             localB[j] = b[3 * i + j];
+            localLambdaNodes[j] = b[3 * i + j];
+         }
          else
+         {
             localB[j] = b[2 * i + j];
+            localLambdaNodes[j] = b[2 * i + j];
+         }
       }
-      elements[i] = Element( coords, 0, q, localB );
+      elements[i] = Element( coords, 0, q, localB, localLambdaNodes );
    }
    elements[0].cond = boundaryConditions[0];
    elements[elemCount - 1].cond = boundaryConditions[1];
@@ -150,6 +170,7 @@ void SimpleIteration::BuildB( )
 
 void SimpleIteration::SolveIter( )
 {
+   qOLd = q;
    BuildMatrix( );
    BuildB( );
    Condition1( );
@@ -157,6 +178,58 @@ void SimpleIteration::SolveIter( )
    lu.calcLU( );
    lu.calcY( );
    lu.calcQ( );
-   q = lu.q;
+   q = ops.AddVec( ops.MultVecScal( lu.q, w ), ops.MultVecScal( qOLd, 1 - w ) );
+   std::vector<double> localQ( 3, 0.0 );
+   for ( int i = 0; i < elemCount; i++ )
+   {
+      for ( int j = 0; j < 3; j++ )
+      {
+         if ( i == 0 )
+         {
+            localQ[j] = q[3 * i + j];
+         }
+         else
+         {
+            localQ[j] = q[2 * i + j];
+         }
+      }
+      elements[i].q = localQ;
+   }
+
+}
+
+void SimpleIteration::Solve( )
+{
+   int k = 0;
+   SolveIter( );
+   double residual = CalcResidual( );
+
+   while ( residual > eps )
+   {
+
+      k++;
+      residual = CalcResidual( );
+      std::cout << k << "\t";
+      for ( int i = 0; i < n; i++ )
+      {
+         std::cout << q[i] << "\t";
+      }
+      std::cout << "\tresidual: " << residual << std::endl;
+      for ( int i = 0; i < elemCount; i++ )
+         for ( int j = 0; j < 3; j++ )
+         {
+            if ( i == 0 )
+               elements[i].q[j] = q[3 * i + j];
+            else
+               elements[i].q[j] = q[2 * i + j];
+         }
+      SolveIter( );
+   }
+
+}
+
+double SimpleIteration::CalcResidual( )
+{
+   return ( ops.DotProduct( ops.AddVec( ops.MultMatVec( matrix, q ), ops.MultVecScal( b, -1 ) ), ops.AddVec( ops.MultMatVec( matrix, q ), ops.MultVecScal( b, -1 ) ) ) ) / ops.DotProduct( b, b );
 }
 

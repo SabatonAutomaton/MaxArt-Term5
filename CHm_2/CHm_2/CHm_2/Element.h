@@ -5,17 +5,19 @@ class Element
 {
 public:
    Element( ) {}
-   Element( std::vector<double> coords_, int cond_, std::vector<double> q_, std::vector<double> _f )
+   Element( std::vector<double> coords_, int cond_, std::vector<double> q_, std::vector<double> _f, std::vector<double> _lambdaNodes )
    {
       coords = coords_;
       cond = cond_;
       localB.resize( 3 );
       f = _f;
+      lambdaNodes = _lambdaNodes;
       q = q_;
    }
 
    //параметры задачи
    double lambda( double u );
+   std::vector<double> lambdaNodes;
    double sigma = 1;
    std::vector<double> f;
 
