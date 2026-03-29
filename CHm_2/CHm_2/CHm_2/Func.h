@@ -10,4 +10,10 @@ public:
    double f(double x);
    double lambda(double u);
    double dlambda(double u);
+   double sigma(double u);
+   double theta(double u);
+   double beta(double u);
+   double dbeta(double u);
+   double uBeta(double u);
+   double boundaryValue(int number, double x);
 };

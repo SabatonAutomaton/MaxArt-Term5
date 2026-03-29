@@ -28,7 +28,6 @@ public:
    double materialLambda( double u );
    double materialDLambda(double u);
    std::vector<double> lambdaNodes;
-   double sigma = 1;
    std::vector<double> f;
 
    double theta( double u );

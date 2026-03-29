@@ -2,34 +2,9 @@
 #include <iostream>
 #include <fstream>
 
-
-double SimpleIteration::u( double x )
-{
-   return functions.u( x );
-}
-
-double SimpleIteration::f( double x )
-{
-   return functions.f( x );
-}
-
-double SimpleIteration::lambda( double u )
-{
-   return functions.lambda( u );
-}
-
-
 double SimpleIteration::Condition( int number, double x )
 {
-   switch ( number )
-   {
-      case 1:
-         return x;
-         break;
-      default:
-         return 0;
-   }
-
+   return functions.boundaryValue( number, x );
 }
 
 void SimpleIteration::Condition1( )
@@ -83,12 +58,12 @@ void SimpleIteration::Input( )
    lambdaNodes.resize( n );
    for ( int i = 0; i <= elemCount; i++ )
    {
-      b[i * 2] = f( mesh.meshX[i] );
-      lambdaNodes[i * 2] = lambda( mesh.meshX[i] );
+      b[i * 2] = functions.f( mesh.meshX[i] );
+      lambdaNodes[i * 2] = functions.lambda( mesh.meshX[i] );
       if ( i < elemCount )
       {
-         b[i * 2 + 1] = f( ( mesh.meshX[i] + mesh.meshX[i + 1] ) / 2.0 );
-         lambdaNodes[i * 2 + 1] = lambda( ( mesh.meshX[i] + mesh.meshX[i + 1] ) / 2.0 );
+         b[i * 2 + 1] = functions.f( ( mesh.meshX[i] + mesh.meshX[i + 1] ) / 2.0 );
+         lambdaNodes[i * 2 + 1] = functions.lambda( ( mesh.meshX[i] + mesh.meshX[i + 1] ) / 2.0 );
       }
 
    }
@@ -110,12 +85,12 @@ void SimpleIteration::Input( )
          if ( i == 0 )
          {
             localB[j] = b[3 * i + j];
-            localLambdaNodes[j] = b[3 * i + j];
+            localLambdaNodes[j] = lambdaNodes[3 * i + j];
          }
          else
          {
             localB[j] = b[2 * i + j];
-            localLambdaNodes[j] = b[2 * i + j];
+            localLambdaNodes[j] = lambdaNodes[2 * i + j];
          }
       }
       elements[i] = Element( coords, 0, q, localB, localLambdaNodes, &functions );
@@ -128,6 +103,13 @@ void SimpleIteration::Input( )
 
 void SimpleIteration::BuildMatrix( )
 {
+   matrix.di = std::vector<double>( n, 0.0 );
+   for ( int i = 0; i < n; i++ )
+   {
+      matrix.ggl[i] = std::vector<double>( 2, 0.0 );
+      matrix.ggu[i] = std::vector<double>( 2, 0.0 );
+   }
+
    for ( int i = 0; i < elemCount; i++ )
    {
       elements[i].BuildLocalMatrix( );

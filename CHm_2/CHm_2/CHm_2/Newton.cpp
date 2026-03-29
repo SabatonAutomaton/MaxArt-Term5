@@ -4,14 +4,7 @@
 
 double Newton::Condition(int number, double x)
 {
-   switch (number)
-   {
-   case 1:
-      return x;
-      break;
-   default:
-      return 0;
-   }
+   return functions.boundaryValue(number, x);
 }
 
 void Newton::Condition1()
@@ -92,12 +85,12 @@ void Newton::Input()
          if (i == 0)
          {
             localB[j] = b[3 * i + j];
-            localLambdaNodes[j] = b[3 * i + j];
+            localLambdaNodes[j] = lambdaNodes[3 * i + j];
          }
          else
          {
             localB[j] = b[2 * i + j];
-            localLambdaNodes[j] = b[2 * i + j];
+            localLambdaNodes[j] = lambdaNodes[2 * i + j];
          }
       }
       elements[i] = Element(coords, 0, q, localB, localLambdaNodes, &functions);
@@ -110,6 +103,13 @@ void Newton::Input()
 
 void Newton::BuildMatrix(std::vector<double> qOld)
 {
+   matrix.di = std::vector<double>(n, 0.0);
+   for (int i = 0; i < n; i++)
+   {
+      matrix.ggl[i] = std::vector<double>(2, 0.0);
+      matrix.ggu[i] = std::vector<double>(2, 0.0);
+   }
+
    for (int i = 0; i < elemCount; i++)
    {
       elements[i].BuildLocalMatrixNewton(qOld);
@@ -244,6 +244,21 @@ double Newton::CalcResidual()
          else
             b_nonlin[2 * i + j] += elements[i].localB[j];
       }
+   }
+
+   if (elements[0].cond == 1)
+   {
+      A_nonlin.di[0] = 1;
+      b_nonlin[0] = Condition(1, 0);
+      A_nonlin.ggu[1][1] = 0;
+      A_nonlin.ggu[2][0] = 0;
+   }
+   if (elements[elemCount - 1].cond == 1)
+   {
+      A_nonlin.di[n - 1] = 1;
+      b_nonlin[n - 1] = Condition(1, mesh.meshX[elemCount]);
+      A_nonlin.ggl[n - 1][0] = 0;
+      A_nonlin.ggl[n - 1][1] = 0;
    }
 
    std::vector<double> r = ops.AddVec(
