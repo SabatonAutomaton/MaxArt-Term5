@@ -47,6 +47,8 @@ public:
    void SolveIter( );
    void Solve( );
    double CalcResidual( );
+   double CalcL2Error( );
+   void PrintTimeLayerInfo( int layerIndex, int iterationCount );
    std::vector<double> lambdaNodes;
 
    Mesh mesh;

@@ -83,9 +83,6 @@ int main()
       solver.Solve();
       WriteSolutionToFile( solver, "out.txt" );
 
-      for (double v : solver.q)
-         std::cout << v << "\t";
-
       break;
    }
 
@@ -98,9 +95,6 @@ int main()
       solver.Input();
       solver.Solve();
       WriteSolutionToFile( solver, "out.txt" );
-
-      for (double v : solver.q)
-         std::cout << v << "\t";
 
       break;
    }

@@ -1,6 +1,8 @@
 #include "Newton.h"
 #include <iostream>
 #include <fstream>
+#include <iomanip>
+#include <cmath>
 
 double Newton::Condition(int number, double x)
 {
@@ -227,6 +229,10 @@ void Newton::Solve()
       return;
    }
 
+   timeLayer = 0;
+   functions.currentTime = mesh.meshT[0];
+   PrintTimeLayerInfo(0, 0);
+
    for (int s = 1; s < mesh.n_t; s++)
    {
       timeLayer = s;
@@ -263,9 +269,11 @@ void Newton::Solve()
       {
          k++;
          residual = CalcResidual();
-         std::cout << k << "\tresidual: " << residual << std::endl;
          SolveIter();
       }
+
+      functions.currentTime = mesh.meshT[s];
+      PrintTimeLayerInfo(s, k);
    }
 }
 
@@ -369,5 +377,39 @@ double Newton::CalcResidual()
    );
 
    return ops.DotProduct(r, r) / ops.DotProduct(b_nonlin, b_nonlin);
+}
+
+double Newton::CalcL2Error()
+{
+   double sum = 0.0;
+   for (int i = 0; i < mesh.n_x; i++)
+   {
+      double diff = q[2 * i] - functions.u(mesh.meshX[i]);
+      sum += diff * diff;
+   }
+   return std::sqrt(sum);
+}
+
+void Newton::PrintTimeLayerInfo(int layerIndex, int iterationCount)
+{
+   double error = CalcL2Error();
+   std::streamsize oldPrecision = std::cout.precision();
+   std::ios::fmtflags oldFlags = std::cout.flags();
+
+   std::cout << std::fixed << std::setprecision(5)
+      << "Time layer " << layerIndex << ": t = " << mesh.meshT[layerIndex]
+      << ", countNodes = " << mesh.n_x;
+
+   if (layerIndex > 0)
+   {
+      std::cout << ", ht = " << (mesh.meshT[layerIndex] - mesh.meshT[layerIndex - 1])
+         << ", countIteration = " << iterationCount;
+   }
+
+   std::cout << std::scientific << std::setprecision(4)
+      << ", ||u* - u||L2 = " << error << std::endl;
+
+   std::cout.flags(oldFlags);
+   std::cout.precision(oldPrecision);
 }
 
