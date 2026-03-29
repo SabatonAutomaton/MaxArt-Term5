@@ -12,22 +12,16 @@ double Functions::u(double x)
 		return x * x;
 
 	case 3:
-		return x * x * x;
+		return currentTime * currentTime;
 
 	case 4:
-		return x * x * x * x;
+		return x * x;
 
 	case 5:
-		return x * x * x * x * x;
+		return x * x + currentTime;
 
 	case 6:
-		return x / (1.0 + x);
-
-	case 7:
-		return sin(std::numbers::pi * x);
-
-	case 8:
-		return exp(-currentTime) * sin(std::numbers::pi * x);
+		return x * x;
 
 	default:
 		return x;
@@ -45,22 +39,16 @@ double Functions::f(double x)
 		return -2.0;
 
 	case 3:
-		return -6.0 * x;
+		return 2.0 * currentTime;
 
 	case 4:
-		return -12.0 * x * x;
+		return -6.0 * x * x;
 
 	case 5:
-		return -20.0 * x * x * x;
+		return 1.0 - 6.0 * x * x - 2.0 * currentTime;
 
 	case 6:
-		return 2.0 / pow(1.0 + x, 3);
-
-	case 7:
-		return std::numbers::pi * std::numbers::pi * sin(std::numbers::pi * x);
-
-	case 8:
-		return (std::numbers::pi * std::numbers::pi - 1.0) * exp(-currentTime) * sin(std::numbers::pi * x);
+		return 4.0 * x * x * sin( x * x ) - 2.0 * cos( x * x );
 
 	default:
 		return 0.0;
@@ -71,6 +59,18 @@ double Functions::lambda(double u)
 {
 	switch (id)
 	{
+	case 1:
+	case 2:
+	case 3:
+		return 1.0;
+
+	case 4:
+	case 5:
+		return u;
+
+	case 6:
+		return cos( u );
+
 	default:
 		return 1.0;
 	}
@@ -80,6 +80,18 @@ double Functions::dlambda(double u)
 {
 	switch (id)
 	{
+	case 1:
+	case 2:
+	case 3:
+		return 0.0;
+
+	case 4:
+	case 5:
+		return 1.0;
+
+	case 6:
+		return -sin( u );
+
 	default:
 		return 0.0;
 	}

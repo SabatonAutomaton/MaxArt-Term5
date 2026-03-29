@@ -113,10 +113,18 @@ void Newton::BuildMatrix(std::vector<double> qOld)
 
    for (int i = 0; i < elemCount; i++)
    {
+      std::vector<double> localQOld(3, 0.0);
+      for (int j = 0; j < 3; j++)
+      {
+         if (i == 0)
+            localQOld[j] = qOld[3 * i + j];
+         else
+            localQOld[j] = qOld[2 * i + j];
+      }
       elements[i].useTimeDependent = useTimeDependent;
       elements[i].deltaT = deltaT;
       elements[i].currentTime = mesh.meshT[timeLayer];
-      elements[i].BuildLocalMatrixNewton(qOld);
+      elements[i].BuildLocalMatrixNewton(localQOld);
       for (int j = 0; j < 3; j++)
       {
          if (i == 0)
@@ -139,10 +147,18 @@ void Newton::BuildB(std::vector<double> qOld)
    b = std::vector<double>(n, 0.0);
    for (int i = 0; i < elemCount; i++)
    {
+      std::vector<double> localQOld(3, 0.0);
+      for (int j = 0; j < 3; j++)
+      {
+         if (i == 0)
+            localQOld[j] = qOld[3 * i + j];
+         else
+            localQOld[j] = qOld[2 * i + j];
+      }
       elements[i].useTimeDependent = useTimeDependent;
       elements[i].deltaT = deltaT;
       elements[i].currentTime = mesh.meshT[timeLayer];
-      elements[i].BuildLocalBNewton(qOld);
+      elements[i].BuildLocalBNewton(localQOld);
       for (int j = 0; j < 3; j++)
       {
          if (i == 0)
@@ -196,12 +212,7 @@ void Newton::Solve()
       {
          k++;
          residual = CalcResidual();
-         std::cout << k << "\t";
-         for (int i = 0; i < n; i++)
-         {
-            std::cout << q[i] << "\t";
-         }
-         std::cout << "\tresidual: " << residual << std::endl;
+         std::cout << k << "\tresidual: " << residual << std::endl;
          for (int i = 0; i < elemCount; i++)
             for (int j = 0; j < 3; j++)
             {
@@ -252,12 +263,7 @@ void Newton::Solve()
       {
          k++;
          residual = CalcResidual();
-         std::cout << "time layer " << s << ", iter " << k << "\t";
-         for (int i = 0; i < n; i++)
-         {
-            std::cout << q[i] << "\t";
-         }
-         std::cout << "\tresidual: " << residual << std::endl;
+         std::cout << k << "\tresidual: " << residual << std::endl;
          SolveIter();
       }
    }
@@ -272,12 +278,12 @@ void Newton::UpdateLayerData()
    for (int i = 0; i <= elemCount; i++)
    {
       b[i * 2] = functions.f(mesh.meshX[i]);
-      lambdaNodes[i * 2] = functions.lambda(mesh.meshX[i]);
+      lambdaNodes[i * 2] = functions.lambda(q[i * 2]);
       if (i < elemCount)
       {
          double middle = (mesh.meshX[i] + mesh.meshX[i + 1]) / 2.0;
          b[i * 2 + 1] = functions.f(middle);
-         lambdaNodes[i * 2 + 1] = functions.lambda(middle);
+         lambdaNodes[i * 2 + 1] = functions.lambda(q[i * 2 + 1]);
       }
    }
 
