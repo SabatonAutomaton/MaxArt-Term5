@@ -7,7 +7,7 @@
 #include "MatrixOperations.h"
 #include "Func.h"
 
-class SimpleIteration
+class Newton
 {
 public:
    double eps = 1e-16;
@@ -19,8 +19,8 @@ public:
 
    //Краевые условия
    int boundaryConditions[2];
-   double Condition(int number, double x );
-   void Condition1( );
+   double Condition(int number, double x);
+   void Condition1();
 
    std::vector<double> q;
    std::vector<double> qOLd;
@@ -37,15 +37,12 @@ public:
    double w = 0.1;
 
    std::vector<Element> elements;
-   void Input( );
-   void BuildMatrix( );
-   void BuildB( );
-   void SolveIter( );
-   void Solve( );
-   double CalcResidual( );
-   double u(double x );
-   double f(double x );
-   double lambda( double u );
+   void Input();
+   void BuildMatrix(std::vector<double> qOld);
+   void BuildB(std::vector<double> qOld);
+   void SolveIter();
+   void Solve();
+   double CalcResidual();
    std::vector<double> lambdaNodes;
 
    Mesh mesh;

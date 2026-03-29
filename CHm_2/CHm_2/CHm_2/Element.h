@@ -1,9 +1,13 @@
 #pragma once
 #include "Basis.h"
 #include <vector>
+#include "Func.h"
+
 class Element
 {
 public:
+   Functions functions;
+
    Element( ) {}
    Element( std::vector<double> coords_, int cond_, std::vector<double> q_, std::vector<double> _f, std::vector<double> _lambdaNodes )
    {
@@ -17,12 +21,14 @@ public:
 
    //параметры задачи
    double lambda( double u );
+   double dlambda(double u);
    std::vector<double> lambdaNodes;
    double sigma = 1;
    std::vector<double> f;
 
    double theta( double u );
    double beta( double u );
+   double dbeta(double u);
    double uBeta( double u );
    double uh( double x );
 
@@ -36,6 +42,7 @@ public:
 
    void BuildLocalMatrix( );
    void BuildLocalB( );
-
+   void BuildLocalMatrixNewton(std::vector<double> q_0);
+   void BuildLocalBNewton(std::vector<double> q_0);
 };
 
