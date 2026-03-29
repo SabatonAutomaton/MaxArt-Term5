@@ -35,10 +35,15 @@ public:
    double dbeta(double u);
    double uBeta( double u );
    double uh( double x );
+   double uhPrevTime( double x );
 
    std::vector<double> coords;
    int cond = 0;
    std::vector<double> q;
+   std::vector<double> qPrevTime;
+   bool useTimeDependent = false;
+   double deltaT = 1.0;
+   double currentTime = 0.0;
    std::vector<std::vector<double>> localMatrix = std::vector<std::vector<double>>( 3, std::vector<double>( 3, 0.0 ) );
    std::vector<double> localB;
 

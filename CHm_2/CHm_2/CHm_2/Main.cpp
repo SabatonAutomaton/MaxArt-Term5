@@ -20,6 +20,7 @@ int main()
    {
       SimpleIteration solver;
       solver.functions.id = Id;
+      solver.useTimeDependent = true;
 
       solver.Input();
       solver.Solve();
@@ -34,6 +35,7 @@ int main()
    {
       Newton solver;
       solver.functions.id = Id;
+      solver.useTimeDependent = true;
 
       solver.Input();
       solver.Solve();

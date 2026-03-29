@@ -56,25 +56,25 @@ void Newton::Input()
 
    b.resize(n);
    lambdaNodes.resize(n);
-   for (int i = 0; i <= elemCount; i++)
-   {
-      b[i * 2] = functions.f(mesh.meshX[i]);
-      lambdaNodes[i * 2] = functions.lambda(mesh.meshX[i]);
-      if (i < elemCount)
-      {
-         b[i * 2 + 1] = functions.f((mesh.meshX[i] + mesh.meshX[i + 1]) / 2.0);
-         lambdaNodes[i * 2 + 1] = functions.lambda((mesh.meshX[i] + mesh.meshX[i + 1]) / 2.0);
-      }
-
-   }
    b0 = b;
 
 
    std::vector<double> coords;
    elements.resize(elemCount);
    q = std::vector<double>(n, 0.0);
+   if (useTimeDependent)
+   {
+      functions.currentTime = mesh.meshT[0];
+      for (int i = 0; i <= elemCount; i++)
+      {
+         q[i * 2] = functions.u(mesh.meshX[i]);
+         if (i < elemCount)
+            q[i * 2 + 1] = functions.u((mesh.meshX[i] + mesh.meshX[i + 1]) / 2.0);
+      }
+   }
    q[0] = Condition(1, 0);
    q[n - 1] = Condition(1, mesh.meshX[elemCount]);
+   qPrevTime = q;
    std::vector<double> localB(3, 0.0);
    std::vector<double> localLambdaNodes(3, 0.0);
    for (int i = 0; i < elemCount; i++)
@@ -97,6 +97,7 @@ void Newton::Input()
    }
    elements[0].cond = boundaryConditions[0];
    elements[elemCount - 1].cond = boundaryConditions[1];
+   UpdateLayerData();
 
 
 }
@@ -112,6 +113,9 @@ void Newton::BuildMatrix(std::vector<double> qOld)
 
    for (int i = 0; i < elemCount; i++)
    {
+      elements[i].useTimeDependent = useTimeDependent;
+      elements[i].deltaT = deltaT;
+      elements[i].currentTime = mesh.meshT[timeLayer];
       elements[i].BuildLocalMatrixNewton(qOld);
       for (int j = 0; j < 3; j++)
       {
@@ -135,6 +139,9 @@ void Newton::BuildB(std::vector<double> qOld)
    b = std::vector<double>(n, 0.0);
    for (int i = 0; i < elemCount; i++)
    {
+      elements[i].useTimeDependent = useTimeDependent;
+      elements[i].deltaT = deltaT;
+      elements[i].currentTime = mesh.meshT[timeLayer];
       elements[i].BuildLocalBNewton(qOld);
       for (int j = 0; j < 3; j++)
       {
@@ -149,6 +156,7 @@ void Newton::BuildB(std::vector<double> qOld)
 void Newton::SolveIter()
 {
    qOLd = q;
+   UpdateLayerData();
    BuildMatrix(qOLd);
    BuildB(qOLd);
    Condition1();
@@ -178,32 +186,117 @@ void Newton::SolveIter()
 
 void Newton::Solve()
 {
-   int k = 0;
-   SolveIter();
-   double residual = CalcResidual();
-
-   while (residual > eps)
+   if (!useTimeDependent)
    {
+      int k = 0;
+      SolveIter();
+      double residual = CalcResidual();
 
-      k++;
-      residual = CalcResidual();
-      std::cout << k << "\t";
-      for (int i = 0; i < n; i++)
+      while (residual > eps && k < maxIter)
       {
-         std::cout << q[i] << "\t";
+         k++;
+         residual = CalcResidual();
+         std::cout << k << "\t";
+         for (int i = 0; i < n; i++)
+         {
+            std::cout << q[i] << "\t";
+         }
+         std::cout << "\tresidual: " << residual << std::endl;
+         for (int i = 0; i < elemCount; i++)
+            for (int j = 0; j < 3; j++)
+            {
+               if (i == 0)
+                  elements[i].q[j] = q[3 * i + j];
+               else
+                  elements[i].q[j] = q[2 * i + j];
+            }
+         SolveIter();
       }
-      std::cout << "\tresidual: " << residual << std::endl;
+
+      return;
+   }
+
+   for (int s = 1; s < mesh.n_t; s++)
+   {
+      timeLayer = s;
+      deltaT = mesh.meshT[s] - mesh.meshT[s - 1];
+      qPrevTime = q;
+      q = qPrevTime;
+
       for (int i = 0; i < elemCount; i++)
+      {
+         std::vector<double> localQ(3, 0.0);
+         std::vector<double> localPrevQ(3, 0.0);
          for (int j = 0; j < 3; j++)
          {
             if (i == 0)
-               elements[i].q[j] = q[3 * i + j];
+            {
+               localQ[j] = q[3 * i + j];
+               localPrevQ[j] = qPrevTime[3 * i + j];
+            }
             else
-               elements[i].q[j] = q[2 * i + j];
+            {
+               localQ[j] = q[2 * i + j];
+               localPrevQ[j] = qPrevTime[2 * i + j];
+            }
          }
+         elements[i].q = localQ;
+         elements[i].qPrevTime = localPrevQ;
+      }
+
+      int k = 0;
       SolveIter();
+      double residual = CalcResidual();
+
+      while (residual > eps && k < maxIter)
+      {
+         k++;
+         residual = CalcResidual();
+         std::cout << "time layer " << s << ", iter " << k << "\t";
+         for (int i = 0; i < n; i++)
+         {
+            std::cout << q[i] << "\t";
+         }
+         std::cout << "\tresidual: " << residual << std::endl;
+         SolveIter();
+      }
+   }
+}
+
+void Newton::UpdateLayerData()
+{
+   functions.currentTime = mesh.meshT[timeLayer];
+   b.assign(n, 0.0);
+   lambdaNodes.assign(n, 0.0);
+
+   for (int i = 0; i <= elemCount; i++)
+   {
+      b[i * 2] = functions.f(mesh.meshX[i]);
+      lambdaNodes[i * 2] = functions.lambda(mesh.meshX[i]);
+      if (i < elemCount)
+      {
+         double middle = (mesh.meshX[i] + mesh.meshX[i + 1]) / 2.0;
+         b[i * 2 + 1] = functions.f(middle);
+         lambdaNodes[i * 2 + 1] = functions.lambda(middle);
+      }
    }
 
+   for (int i = 0; i < elemCount; i++)
+   {
+      for (int j = 0; j < 3; j++)
+      {
+         if (i == 0)
+         {
+            elements[i].f[j] = b[3 * i + j];
+            elements[i].lambdaNodes[j] = lambdaNodes[3 * i + j];
+         }
+         else
+         {
+            elements[i].f[j] = b[2 * i + j];
+            elements[i].lambdaNodes[j] = lambdaNodes[2 * i + j];
+         }
+      }
+   }
 }
 
 double Newton::CalcResidual()
@@ -218,6 +311,9 @@ double Newton::CalcResidual()
 
    for (int i = 0; i < elemCount; i++)
    {
+      elements[i].useTimeDependent = useTimeDependent;
+      elements[i].deltaT = deltaT;
+      elements[i].currentTime = mesh.meshT[timeLayer];
       elements[i].BuildLocalMatrix();
       elements[i].BuildLocalB();
 

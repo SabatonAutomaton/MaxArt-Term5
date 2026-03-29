@@ -24,6 +24,7 @@ public:
 
    std::vector<double> q;
    std::vector<double> qOLd;
+   std::vector<double> qPrevTime;
 
    //матрица
    Matrix matrix;
@@ -33,11 +34,14 @@ public:
    std::vector<double> b0;
 
    double deltaT;
+   bool useTimeDependent = false;
+   int timeLayer = 0;
 
-   double w = 0.1;
+   double w = 1.0;
 
    std::vector<Element> elements;
    void Input( );
+   void UpdateLayerData( );
    void BuildMatrix( );
    void BuildB( );
    void SolveIter( );

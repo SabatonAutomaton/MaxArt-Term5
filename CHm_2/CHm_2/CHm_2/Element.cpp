@@ -45,6 +45,11 @@ double Element::uh( double x )
    return q[0] * basis.basis1( x ) + q[1] * basis.basis2( x ) + q[2] * basis.basis3( x );
 }
 
+double Element::uhPrevTime( double x )
+{
+   return qPrevTime[0] * basis.basis1( x ) + qPrevTime[1] * basis.basis2( x ) + qPrevTime[2] * basis.basis3( x );
+}
+
 void Element::BuildLocalMatrix( )
 {
    localMatrix = std::vector<std::vector<double>>( 3, std::vector<double>( 3, 0.0 ) );
@@ -59,7 +64,7 @@ void Element::BuildLocalMatrix( )
       double gradPsi1 = basis.basis1Grad( quadrature[i][0] ) / jacobian;
       double gradPsi2 = basis.basis2Grad( quadrature[i][0] ) / jacobian;
       double gradPsi3 = basis.basis3Grad( quadrature[i][0] ) / jacobian;
-      double sigmaVal = functions->sigma( uh( quadrature[i][0] ) );
+      double sigmaVal = useTimeDependent ? 0.0 : functions->sigma( uh( quadrature[i][0] ) );
       double lambdas = lambdaApprox( quadrature[i][0] );
       localMatrix[0][0] += wj * ( lambdas * gradPsi1 * gradPsi1 + sigmaVal * psi1 * psi1 + beta( uh( quadrature[i][0] ) ) * psi1 * psi1 );
       localMatrix[0][1] += wj * ( lambdas * gradPsi1 * gradPsi2 + sigmaVal * psi1 * psi2 + beta( uh( quadrature[i][0] ) ) * psi1 * psi2 );
@@ -70,6 +75,19 @@ void Element::BuildLocalMatrix( )
       localMatrix[2][0] += wj * ( lambdas * gradPsi3 * gradPsi1 + sigmaVal * psi3 * psi1 + beta( uh( quadrature[i][0] ) ) * psi3 * psi1 );
       localMatrix[2][1] += wj * ( lambdas * gradPsi3 * gradPsi2 + sigmaVal * psi3 * psi2 + beta( uh( quadrature[i][0] ) ) * psi3 * psi2 );
       localMatrix[2][2] += wj * ( lambdas * gradPsi3 * gradPsi3 + sigmaVal * psi3 * psi3 + beta( uh( quadrature[i][0] ) ) * psi3 * psi3 );
+      if ( useTimeDependent )
+      {
+         double sigmaTimeVal = functions->sigmaTime( currentTime ) / deltaT;
+         localMatrix[0][0] += wj * sigmaTimeVal * psi1 * psi1;
+         localMatrix[0][1] += wj * sigmaTimeVal * psi1 * psi2;
+         localMatrix[0][2] += wj * sigmaTimeVal * psi1 * psi3;
+         localMatrix[1][0] += wj * sigmaTimeVal * psi2 * psi1;
+         localMatrix[1][1] += wj * sigmaTimeVal * psi2 * psi2;
+         localMatrix[1][2] += wj * sigmaTimeVal * psi2 * psi3;
+         localMatrix[2][0] += wj * sigmaTimeVal * psi3 * psi1;
+         localMatrix[2][1] += wj * sigmaTimeVal * psi3 * psi2;
+         localMatrix[2][2] += wj * sigmaTimeVal * psi3 * psi3;
+      }
    }
 }
 
@@ -92,6 +110,14 @@ void Element::BuildLocalB( )
       localB[0] += wj * ( fVal * psi1 + theta( uh( quadrature[i][0] ) ) * psi1 + beta( uh( quadrature[i][0] ) ) * uBeta( uh( quadrature[i][0] ) ) * psi1 );
       localB[1] += wj * ( fVal * psi2 + theta( uh( quadrature[i][0] ) ) * psi2 + beta( uh( quadrature[i][0] ) ) * uBeta( uh( quadrature[i][0] ) ) * psi2 );
       localB[2] += wj * ( fVal * psi3 + theta( uh( quadrature[i][0] ) ) * psi3 + beta( uh( quadrature[i][0] ) ) * uBeta( uh( quadrature[i][0] ) ) * psi3 );
+      if ( useTimeDependent )
+      {
+         double sigmaTimeVal = functions->sigmaTime( currentTime ) / deltaT;
+         double uhPrev = uhPrevTime( quadrature[i][0] );
+         localB[0] += wj * sigmaTimeVal * uhPrev * psi1;
+         localB[1] += wj * sigmaTimeVal * uhPrev * psi2;
+         localB[2] += wj * sigmaTimeVal * uhPrev * psi3;
+      }
    }
 }
 
@@ -118,16 +144,17 @@ void Element::BuildLocalMatrixNewton(std::vector<double> q_0)
 		gradPsi[0] = gradPsi1;
 		gradPsi[1] = gradPsi2;
 		gradPsi[2] = gradPsi3;
-		double sigmaVal = functions->sigma(uh(quadrature[g][0]));
+		double sigmaVal = useTimeDependent ? 0.0 : functions->sigma(uh(quadrature[g][0]));
 		double lambdas = lambdaApprox(quadrature[g][0]);
 		double dlambda_du = materialDLambda(uh(quadrature[g][0]));
 		double beta_val = beta(uh(quadrature[g][0]));
+		double sigmaTimeVal = useTimeDependent ? functions->sigmaTime(currentTime) / deltaT : 0.0;
 
 		for (int i = 0; i < 3; i++)
 			for (int j = 0; j < 3; j++)
 			{
 				// Вклады базовые
-				double A_ij = lambdas * gradPsi[i] * gradPsi[j] + sigmaVal * psi[i] * psi[j] + beta_val * psi[i] * psi[j];
+				double A_ij = lambdas * gradPsi[i] * gradPsi[j] + sigmaVal * psi[i] * psi[j] + beta_val * psi[i] * psi[j] + sigmaTimeVal * psi[i] * psi[j];
 
 				// Вклады от Ньютона
 				double dA_q = 0;
@@ -170,13 +197,15 @@ void Element::BuildLocalBNewton(std::vector<double> q_0)
 		double theta_val = theta(uh(quadrature[g][0]));
 		double beta_val = beta(uh(quadrature[g][0]));
 		double uBeta_val = uBeta(uh(quadrature[g][0]));
+		double sigmaTimeVal = useTimeDependent ? functions->sigmaTime(currentTime) / deltaT : 0.0;
+		double uhPrev = useTimeDependent ? uhPrevTime(quadrature[g][0]) : 0.0;
 
 		double fVal = f[0] * psi1 + f[1] * psi2 + f[2] * psi3;
 
 		for (int i = 0; i < 3; i++)
 		{
 			// Вклады базовые
-			double B_i = (fVal * psi[i] + theta_val * psi[i] + beta_val * uBeta_val * psi[i]);
+			double B_i = (fVal * psi[i] + theta_val * psi[i] + beta_val * uBeta_val * psi[i] + sigmaTimeVal * uhPrev * psi[i]);
 
 			// Вклады от Ньютона
 			double dA_q = 0;

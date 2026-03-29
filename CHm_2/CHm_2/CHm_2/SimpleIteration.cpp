@@ -56,25 +56,25 @@ void SimpleIteration::Input( )
 
    b.resize( n );
    lambdaNodes.resize( n );
-   for ( int i = 0; i <= elemCount; i++ )
-   {
-      b[i * 2] = functions.f( mesh.meshX[i] );
-      lambdaNodes[i * 2] = functions.lambda( mesh.meshX[i] );
-      if ( i < elemCount )
-      {
-         b[i * 2 + 1] = functions.f( ( mesh.meshX[i] + mesh.meshX[i + 1] ) / 2.0 );
-         lambdaNodes[i * 2 + 1] = functions.lambda( ( mesh.meshX[i] + mesh.meshX[i + 1] ) / 2.0 );
-      }
-
-   }
    b0 = b;
 
 
    std::vector<double> coords;
    elements.resize( elemCount );
    q = std::vector<double>( n, 0.0 );
+   if ( useTimeDependent )
+   {
+      functions.currentTime = mesh.meshT[0];
+      for ( int i = 0; i <= elemCount; i++ )
+      {
+         q[i * 2] = functions.u( mesh.meshX[i] );
+         if ( i < elemCount )
+            q[i * 2 + 1] = functions.u( ( mesh.meshX[i] + mesh.meshX[i + 1] ) / 2.0 );
+      }
+   }
    q[0] = Condition( 1, 0 );
    q[n - 1] = Condition( 1, mesh.meshX[elemCount] );
+   qPrevTime = q;
    std::vector<double> localB( 3, 0.0 );
    std::vector<double> localLambdaNodes( 3, 0.0 );
    for ( int i = 0; i < elemCount; i++ )
@@ -97,6 +97,7 @@ void SimpleIteration::Input( )
    }
    elements[0].cond = boundaryConditions[0];
    elements[elemCount - 1].cond = boundaryConditions[1];
+   UpdateLayerData( );
 
 
 }
@@ -112,6 +113,9 @@ void SimpleIteration::BuildMatrix( )
 
    for ( int i = 0; i < elemCount; i++ )
    {
+      elements[i].useTimeDependent = useTimeDependent;
+      elements[i].deltaT = deltaT;
+      elements[i].currentTime = mesh.meshT[timeLayer];
       elements[i].BuildLocalMatrix( );
       for ( int j = 0; j < 3; j++ )
       {
@@ -135,6 +139,9 @@ void SimpleIteration::BuildB( )
    b = std::vector<double>( n, 0.0 );
    for ( int i = 0; i < elemCount; i++ )
    {
+      elements[i].useTimeDependent = useTimeDependent;
+      elements[i].deltaT = deltaT;
+      elements[i].currentTime = mesh.meshT[timeLayer];
       elements[i].BuildLocalB( );
       for ( int j = 0; j < 3; j++ )
       {
@@ -149,6 +156,7 @@ void SimpleIteration::BuildB( )
 void SimpleIteration::SolveIter( )
 {
    qOLd = q;
+   UpdateLayerData( );
    BuildMatrix( );
    BuildB( );
    Condition1( );
@@ -178,36 +186,182 @@ void SimpleIteration::SolveIter( )
 
 void SimpleIteration::Solve( )
 {
-   int k = 0;
-   SolveIter( );
-   double residual = CalcResidual( );
-
-   while ( residual > eps )
+   if ( !useTimeDependent )
    {
+      int k = 0;
+      SolveIter( );
+      double residual = CalcResidual( );
 
-      k++;
-      residual = CalcResidual( );
-      std::cout << k << "\t";
-      for ( int i = 0; i < n; i++ )
+      while ( residual > eps && k < maxIter )
       {
-         std::cout << q[i] << "\t";
+         k++;
+         residual = CalcResidual( );
+         std::cout << k << "\t";
+         for ( int i = 0; i < n; i++ )
+         {
+            std::cout << q[i] << "\t";
+         }
+         std::cout << "\tresidual: " << residual << std::endl;
+         for ( int i = 0; i < elemCount; i++ )
+            for ( int j = 0; j < 3; j++ )
+            {
+               if ( i == 0 )
+                  elements[i].q[j] = q[3 * i + j];
+               else
+                  elements[i].q[j] = q[2 * i + j];
+            }
+         SolveIter( );
       }
-      std::cout << "\tresidual: " << residual << std::endl;
+
+      return;
+   }
+
+   for ( int s = 1; s < mesh.n_t; s++ )
+   {
+      timeLayer = s;
+      deltaT = mesh.meshT[s] - mesh.meshT[s - 1];
+      qPrevTime = q;
+      q = qPrevTime;
+
       for ( int i = 0; i < elemCount; i++ )
+      {
+         std::vector<double> localQ( 3, 0.0 );
+         std::vector<double> localPrevQ( 3, 0.0 );
          for ( int j = 0; j < 3; j++ )
          {
             if ( i == 0 )
-               elements[i].q[j] = q[3 * i + j];
+            {
+               localQ[j] = q[3 * i + j];
+               localPrevQ[j] = qPrevTime[3 * i + j];
+            }
             else
-               elements[i].q[j] = q[2 * i + j];
+            {
+               localQ[j] = q[2 * i + j];
+               localPrevQ[j] = qPrevTime[2 * i + j];
+            }
          }
+         elements[i].q = localQ;
+         elements[i].qPrevTime = localPrevQ;
+      }
+
+      int k = 0;
       SolveIter( );
+      double residual = CalcResidual( );
+
+      while ( residual > eps && k < maxIter )
+      {
+         k++;
+         residual = CalcResidual( );
+         std::cout << "time layer " << s << ", iter " << k << "\t";
+         for ( int i = 0; i < n; i++ )
+         {
+            std::cout << q[i] << "\t";
+         }
+         std::cout << "\tresidual: " << residual << std::endl;
+         SolveIter( );
+      }
+   }
+}
+
+void SimpleIteration::UpdateLayerData( )
+{
+   functions.currentTime = mesh.meshT[timeLayer];
+   b.assign( n, 0.0 );
+   lambdaNodes.assign( n, 0.0 );
+
+   for ( int i = 0; i <= elemCount; i++ )
+   {
+      b[i * 2] = functions.f( mesh.meshX[i] );
+      lambdaNodes[i * 2] = functions.lambda( mesh.meshX[i] );
+      if ( i < elemCount )
+      {
+         double middle = ( mesh.meshX[i] + mesh.meshX[i + 1] ) / 2.0;
+         b[i * 2 + 1] = functions.f( middle );
+         lambdaNodes[i * 2 + 1] = functions.lambda( middle );
+      }
    }
 
+   for ( int i = 0; i < elemCount; i++ )
+   {
+      for ( int j = 0; j < 3; j++ )
+      {
+         if ( i == 0 )
+         {
+            elements[i].f[j] = b[3 * i + j];
+            elements[i].lambdaNodes[j] = lambdaNodes[3 * i + j];
+         }
+         else
+         {
+            elements[i].f[j] = b[2 * i + j];
+            elements[i].lambdaNodes[j] = lambdaNodes[2 * i + j];
+         }
+      }
+   }
 }
 
 double SimpleIteration::CalcResidual( )
 {
-   return ( ops.DotProduct( ops.AddVec( ops.MultMatVec( matrix, q ), ops.MultVecScal( b, -1 ) ), ops.AddVec( ops.MultMatVec( matrix, q ), ops.MultVecScal( b, -1 ) ) ) ) / ops.DotProduct( b, b );
+   Matrix A_nonlin;
+   A_nonlin.n = n;
+   A_nonlin.di.assign( n, 0.0 );
+   A_nonlin.ggl.assign( n, std::vector<double>( 2, 0.0 ) );
+   A_nonlin.ggu.assign( n, std::vector<double>( 2, 0.0 ) );
+
+   std::vector<double> b_nonlin( n, 0.0 );
+
+   for ( int i = 0; i < elemCount; i++ )
+   {
+      elements[i].useTimeDependent = useTimeDependent;
+      elements[i].deltaT = deltaT;
+      elements[i].currentTime = mesh.meshT[timeLayer];
+      elements[i].BuildLocalMatrix( );
+      elements[i].BuildLocalB( );
+
+      for ( int j = 0; j < 3; j++ )
+      {
+         if ( i == 0 )
+            A_nonlin.di[3 * i + j] += elements[i].localMatrix[j][j];
+         else
+            A_nonlin.di[2 * i + j] += elements[i].localMatrix[j][j];
+      }
+
+      A_nonlin.ggl[2 * i + 1][1] += elements[i].localMatrix[1][0];
+      A_nonlin.ggl[2 * i + 2][0] += elements[i].localMatrix[2][0];
+      A_nonlin.ggl[2 * i + 2][1] += elements[i].localMatrix[2][1];
+
+      A_nonlin.ggu[2 * i + 1][1] += elements[i].localMatrix[0][1];
+      A_nonlin.ggu[2 * i + 2][0] += elements[i].localMatrix[0][2];
+      A_nonlin.ggu[2 * i + 2][1] += elements[i].localMatrix[1][2];
+
+      for ( int j = 0; j < 3; j++ )
+      {
+         if ( i == 0 )
+            b_nonlin[3 * i + j] += elements[i].localB[j];
+         else
+            b_nonlin[2 * i + j] += elements[i].localB[j];
+      }
+   }
+
+   if ( elements[0].cond == 1 )
+   {
+      A_nonlin.di[0] = 1;
+      b_nonlin[0] = Condition( 1, 0 );
+      A_nonlin.ggu[1][1] = 0;
+      A_nonlin.ggu[2][0] = 0;
+   }
+   if ( elements[elemCount - 1].cond == 1 )
+   {
+      A_nonlin.di[n - 1] = 1;
+      b_nonlin[n - 1] = Condition( 1, mesh.meshX[elemCount] );
+      A_nonlin.ggl[n - 1][0] = 0;
+      A_nonlin.ggl[n - 1][1] = 0;
+   }
+
+   std::vector<double> r = ops.AddVec(
+      ops.MultMatVec( A_nonlin, q ),
+      ops.MultVecScal( b_nonlin, -1 )
+   );
+
+   return ops.DotProduct( r, r ) / ops.DotProduct( b_nonlin, b_nonlin );
 }
 
