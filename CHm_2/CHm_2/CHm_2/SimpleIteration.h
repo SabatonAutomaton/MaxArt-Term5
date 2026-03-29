@@ -43,9 +43,6 @@ public:
    void SolveIter( );
    void Solve( );
    double CalcResidual( );
-   double u(double x );
-   double f(double x );
-   double lambda( double u );
    std::vector<double> lambdaNodes;
 
    Mesh mesh;

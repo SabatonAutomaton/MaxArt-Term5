@@ -6,10 +6,11 @@
 class Element
 {
 public:
-   Functions functions;
+   Functions localFunctions;
+   Functions* functions = &localFunctions;
 
    Element( ) {}
-   Element( std::vector<double> coords_, int cond_, std::vector<double> q_, std::vector<double> _f, std::vector<double> _lambdaNodes )
+   Element( std::vector<double> coords_, int cond_, std::vector<double> q_, std::vector<double> _f, std::vector<double> _lambdaNodes, Functions* functions_ = nullptr )
    {
       coords = coords_;
       cond = cond_;
@@ -17,11 +18,15 @@ public:
       f = _f;
       lambdaNodes = _lambdaNodes;
       q = q_;
+      SetFunctions( functions_ );
    }
 
+   void SetFunctions( Functions* functions_ );
+
    //параметры задачи
-   double lambda( double u );
-   double dlambda(double u);
+   double lambdaApprox( double x );
+   double materialLambda( double u );
+   double materialDLambda(double u);
    std::vector<double> lambdaNodes;
    double sigma = 1;
    std::vector<double> f;

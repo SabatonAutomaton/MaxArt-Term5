@@ -1,13 +1,23 @@
 #include "Element.h"
 
-double Element::lambda( double x )
+void Element::SetFunctions( Functions* functions_ )
 {
-   return lambdaNodes[0] * basis.basis1( x ) + lambdaNodes[1] * basis.basis2( x ) + lambdaNodes[2] * basis.basis3( x );;
+   functions = functions_ != nullptr ? functions_ : &localFunctions;
 }
 
-double Element::dlambda(double u)
+double Element::lambdaApprox( double x )
 {
-	return 1;
+   return lambdaNodes[0] * basis.basis1( x ) + lambdaNodes[1] * basis.basis2( x ) + lambdaNodes[2] * basis.basis3( x );
+}
+
+double Element::materialLambda( double u )
+{
+   return functions->lambda( u );
+}
+
+double Element::materialDLambda(double u)
+{
+	return functions->dlambda( u );
 }
 
 double Element::theta( double u )
@@ -48,7 +58,7 @@ void Element::BuildLocalMatrix( )
       double gradPsi1 = basis.basis1Grad( quadrature[i][0] ) / jacobian;
       double gradPsi2 = basis.basis2Grad( quadrature[i][0] ) / jacobian;
       double gradPsi3 = basis.basis3Grad( quadrature[i][0] ) / jacobian;
-      double lambdas = lambda( uh( quadrature[i][0] ) );
+      double lambdas = lambdaApprox( quadrature[i][0] );
       localMatrix[0][0] += wj * ( lambdas * gradPsi1 * gradPsi1 + sigma * psi1 * psi1 + beta( uh( quadrature[i][0] ) ) * psi1 * psi1 );
       localMatrix[0][1] += wj * ( lambdas * gradPsi1 * gradPsi2 + sigma * psi1 * psi2 + beta( uh( quadrature[i][0] ) ) * psi1 * psi2 );
       localMatrix[0][2] += wj * ( lambdas * gradPsi1 * gradPsi3 + sigma * psi1 * psi3 + beta( uh( quadrature[i][0] ) ) * psi1 * psi3 );
@@ -74,7 +84,7 @@ void Element::BuildLocalB( )
       double gradPsi1 = basis.basis1Grad( quadrature[i][0] );
       double gradPsi2 = basis.basis2Grad( quadrature[i][0] );
       double gradPsi3 = basis.basis3Grad( quadrature[i][0] );
-      double lambdas = lambda( uh( quadrature[i][0] ) );
+      double lambdas = lambdaApprox( quadrature[i][0] );
       double fVal = f[0] * psi1 + f[1] * psi2 + f[2] * psi3;
       localB[0] += wj * ( fVal * psi1 + theta( uh( quadrature[i][0] ) ) * psi1 + beta( uh( quadrature[i][0] ) ) * uBeta( uh( quadrature[i][0] ) ) * psi1 );
       localB[1] += wj * ( fVal * psi2 + theta( uh( quadrature[i][0] ) ) * psi2 + beta( uh( quadrature[i][0] ) ) * uBeta( uh( quadrature[i][0] ) ) * psi2 );
@@ -104,8 +114,8 @@ void Element::BuildLocalMatrixNewton(std::vector<double> q_0)
 		gradPsi[0] = gradPsi1;
 		gradPsi[1] = gradPsi2;
 		gradPsi[2] = gradPsi3;
-		double lambdas = lambda(uh(quadrature[g][0]));
-		double dlambda_du = dlambda(uh(quadrature[g][0]));
+		double lambdas = lambdaApprox(quadrature[g][0]);
+		double dlambda_du = materialDLambda(uh(quadrature[g][0]));
 		double beta_val = beta(uh(quadrature[g][0]));
 
 		for (int i = 0; i < 3; i++)
@@ -149,8 +159,8 @@ void Element::BuildLocalBNewton(std::vector<double> q_0)
 		gradPsi[1] = gradPsi2;
 		gradPsi[2] = gradPsi3;
 
-		double lambdas = lambda(uh(quadrature[g][0]));
-		double dlambda_du = dlambda(uh(quadrature[g][0]));
+		double lambdas = lambdaApprox(quadrature[g][0]);
+		double dlambda_du = materialDLambda(uh(quadrature[g][0]));
 		double theta_val = theta(uh(quadrature[g][0]));
 		double beta_val = beta(uh(quadrature[g][0]));
 		double uBeta_val = uBeta(uh(quadrature[g][0]));

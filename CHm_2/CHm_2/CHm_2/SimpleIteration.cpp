@@ -5,21 +5,17 @@
 
 double SimpleIteration::u( double x )
 {
-   return x;
-   //return 2;
-   //return x;
+   return functions.u( x );
 }
 
 double SimpleIteration::f( double x )
 {
-   return x - 1;
-   //return 2;
-   //return x;
+   return functions.f( x );
 }
 
 double SimpleIteration::lambda( double u )
 {
-   return 1 + 1 * u;
+   return functions.lambda( u );
 }
 
 
@@ -122,7 +118,7 @@ void SimpleIteration::Input( )
             localLambdaNodes[j] = b[2 * i + j];
          }
       }
-      elements[i] = Element( coords, 0, q, localB, localLambdaNodes );
+      elements[i] = Element( coords, 0, q, localB, localLambdaNodes, &functions );
    }
    elements[0].cond = boundaryConditions[0];
    elements[elemCount - 1].cond = boundaryConditions[1];
