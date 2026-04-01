@@ -14,11 +14,13 @@ class MSGFR
    double *xk_1;
    double *xk_old;
    double eps = 1e-7;
-   double eps1 = 1e-16;
+   double eps1 = 1e-7;
+   int maxIter = 1000;
    Func f;
    VecOperations ops;
 public:
    void Init( int n );
+   void SetFunctionType( int type );
    void FindInterval(double& a, double& b );
    double *Solver( );
    double CalcW( );

@@ -3,10 +3,11 @@
 #include <iomanip>
 #include <fstream>
 #include <cmath>
+
 void Broyden::Init( int n1 )
 {
    n = n1;
-   x0 = new double[2] { 0, -1 };
+   x0 = new double[2] { -1, 6 };
    xk = new double[n] { 0 };
    xk_1 = new double[n] { 0 };
    etak = new double *[n];
@@ -18,56 +19,57 @@ void Broyden::Init( int n1 )
    }
 }
 
+void Broyden::SetFunctionType( int type )
+{
+   f.SetFunctionType( type );
+}
+
 void Broyden::FindInterval( double &a, double &b )
 {
-   const double H0 = 0.1;        // Начальный шаг
-   const double TAU = 2.0;        // Множитель увеличения шага
-   const int MAX_ITER = 100;      // Максимальное число итераций
+   const double H0 = 0.1;
+   const double TAU = 2.0;
+   const double MIN_STEP = 1e-12;
+   const int MAX_ITER = 100;
 
-   double lambda = 0.0;           // Текущая точка
-   double h = H0;                 // Текущий шаг
+   a = 0.0;
+   double h = H0;
+   double f0 = f.funcInDirectionEta( xk, 0.0, etak );
+   double f1 = f.funcInDirectionEta( xk, h, etak );
 
-   double f_prev = f.funcInDirectionEta( xk, lambda - h, etak );
-   
-   double f_curr = f.funcInDirectionEta( xk, lambda, etak );
-   double f_next = f.funcInDirectionEta( xk, lambda + h, etak );
-
-   if ( f_prev < f_curr )
+   while ( f1 >= f0 && h > MIN_STEP )
    {
-      h = -h;
+      h *= 0.5;
+      f1 = f.funcInDirectionEta( xk, h, etak );
    }
-   else if ( f_next < f_curr ) { }
-   else
+
+   if ( h <= MIN_STEP )
    {
-      a = lambda - h;
-      b = lambda + h;
+      b = H0;
       return;
    }
 
-   int iter = 0;
-   double lambda_prev = lambda;
-   double lambda_curr = lambda + h;
-   double f_curr_val, f_next_val;
+   double lambda_prev = 0.0;
+   double lambda_curr = h;
+   double f_curr = f1;
 
-   while ( iter < MAX_ITER ) {
-      f_curr_val = f.funcInDirectionEta( xk, lambda_curr, etak );
-      f_next_val = f.funcInDirectionEta( xk, lambda_curr + h, etak );
+   for ( int iter = 0; iter < MAX_ITER; iter++ )
+   {
+      double lambda_next = lambda_curr * TAU;
+      double f_next = f.funcInDirectionEta( xk, lambda_next, etak );
 
-
-      if ( f_curr_val < f_next_val ) {
-         a = std::min( lambda_prev, lambda_curr + h );
-         b = std::max( lambda_prev, lambda_curr + h );
-
+      if ( f_next >= f_curr )
+      {
+         a = lambda_prev;
+         b = lambda_next;
          return;
       }
-      lambda_prev = lambda_curr;
-      lambda_curr = lambda_curr + h;
-      h *= TAU;
 
-      iter++;
+      lambda_prev = lambda_curr;
+      lambda_curr = lambda_next;
+      f_curr = f_next;
    }
-   a = 0.0;
-   b = 10.0;
+
+   b = lambda_curr;
 }
 
 double *Broyden::Solver( )
@@ -75,7 +77,6 @@ double *Broyden::Solver( )
    double a = 0, b = 0;
    xk = x0;
    int k = 0;
-   const double PI = 3.14159265359;
    std::ofstream file1( "out1.txt" );
    file1 << "i\t" << "x\t" << "y\t" << "f\t" << "lambda\t" << "|xi - xi-1|\t" << "|yi - yi-1|\t" << "|fi - fi-1|\t" << "eta1\teta2\teta3\teta4\t" << "grad1\tgrad2" << std::endl;
    std::ofstream file2( "out2.txt" );
@@ -107,7 +108,6 @@ double *Broyden::Solver( )
       std::cout << std::endl;
       file1 << std::endl;
       file2 << std::endl;
-
    }
    return xk;
 }
@@ -195,16 +195,24 @@ double Broyden::Parabola( double eps, double an, double bn )
    double x1 = an, x2 = ( an + bn ) / 2.0, x3 = bn;
    double x = x2 + 10 * eps;
    double f0, f1 = f.funcInDirectionEta( xk, x1, etak ), f2 = f.funcInDirectionEta( xk, x2, etak ), f3 = f.funcInDirectionEta( xk, x3, etak );
-   double numer, denom; // числитель, знаменатель
+   double numer, denom;
    int k = 0;
-   while ( fabs( x2 - x ) >= eps )
+   while ( fabs( x3 - x1 ) >= eps && k < maxIter )
    {
       numer = ( x2 - x1 ) * ( x2 - x1 ) * ( f2 - f3 ) - ( x2 - x3 ) * ( x2 - x3 ) * ( f2 - f1 );
       denom = ( x2 - x1 ) * ( f2 - f3 ) - ( x2 - x3 ) * ( f2 - f1 );
-      if ( denom == 0 )
+
+      if ( fabs( denom ) < 1e-14 )
          x = x2;
       else
          x = x2 - 0.5 * numer / denom;
+
+      if ( x <= x1 || x >= x3 || !std::isfinite( x ) )
+         x = 0.5 * ( x1 + x3 );
+
+      if ( fabs( x - x2 ) < eps )
+         break;
+
       f0 = f.funcInDirectionEta( xk, x, etak );
       if ( x <= x2 )
          if ( f0 <= f2 )
@@ -234,6 +242,5 @@ double Broyden::Parabola( double eps, double an, double bn )
          }
       k++;
    }
-   std::cout << k << std::endl;
    return x2;
 }

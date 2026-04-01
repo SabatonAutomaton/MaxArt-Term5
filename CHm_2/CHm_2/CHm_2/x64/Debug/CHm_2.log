@@ -1,0 +1,5 @@
+﻿  SimpleIteration.cpp
+C:\Users\artyo\source\repos\MaxArt-Term6\CHm_2\CHm_2\CHm_2\SimpleIteration.h(3,10): warning C4067: непредвиденные лексемы за директивой препроцессора, требуется newline
+  (компиляция исходного файла "SimpleIteration.cpp")
+  
+  CHm_2.vcxproj -> C:\Users\artyo\source\repos\MaxArt-Term6\CHm_2\CHm_2\x64\Debug\UMF2.exe
