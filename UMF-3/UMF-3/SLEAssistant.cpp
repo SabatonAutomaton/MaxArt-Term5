@@ -1,5 +1,6 @@
 #include "SLEAssistant.h"
 #include <algorithm>
+#include <cmath>
 
 double SLEAssistant::DotProduct( const std::vector<double> &v1, const std::vector<double> &v2 )
 {

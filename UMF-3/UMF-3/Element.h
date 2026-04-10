@@ -27,7 +27,6 @@ public:
    std::vector<double> sigmaNodes;
    std::vector<double> xiNodes;
 
-   Func func;
    double beta;
    double thetaS = 0.0;
    double thetaC = 0.0;
@@ -37,8 +36,7 @@ public:
 
    double Approx( std::vector<double> val, double x );
 
-   Quadratures quad;
-   Basis1D basis;
+
    std::vector<std::vector<double>> localMatrix;
    std::vector<double> fsNodes;
    std::vector<double> fcNodes;
@@ -47,5 +45,9 @@ public:
 
    void BuildLocalMatrix( );
    void BuildLocalB( );
+private:
+   Func func;
+   Quadratures quad;
+   Basis1D basis;
 };
 

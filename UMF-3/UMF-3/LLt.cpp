@@ -1,4 +1,5 @@
 #include "LLt.h"
+#include <cmath>
 
 LLt::LLt( const SparseMatrix &matrix )
 {
