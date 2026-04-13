@@ -37,7 +37,7 @@ public:
    bool useTimeDependent = false;
    int timeLayer = 0;
 
-   double w = 0.1;
+   double w = 1.0;
 
    std::vector<Element> elements;
    void Input( );

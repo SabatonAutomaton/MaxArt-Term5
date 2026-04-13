@@ -14,7 +14,7 @@ void SimpleIteration::Condition1( )
    if ( elements[0].cond == 1 )
    {
       matrix.di[0] = 1;
-      b[0] = Condition( 1, 0 );;
+      b[0] = Condition( 1, mesh.meshX[0] );;
       for ( int i = 0; i < 2; i++ )
       {
          matrix.ggu[1][1] = 0;
@@ -74,7 +74,7 @@ void SimpleIteration::Input( )
             q[i * 2 + 1] = functions.u( ( mesh.meshX[i] + mesh.meshX[i + 1] ) / 2.0 );
       }
    }
-   q[0] = Condition( 1, 0 );
+   q[0] = Condition( 1, mesh.meshX[0] );
    q[n - 1] = Condition( 1, mesh.meshX[elemCount] );
    qPrevTime = q;
    std::vector<double> localB( 3, 0.0 );
@@ -82,20 +82,23 @@ void SimpleIteration::Input( )
    for ( int i = 0; i < elemCount; i++ )
    {
       coords = { mesh.meshX[i], mesh.meshX[i + 1] };
+      std::vector<double> localQ( 3, 0.0 );
       for ( int j = 0; j < 3; j++ )
       {
          if ( i == 0 )
          {
+            localQ[j] = q[3 * i + j];
             localB[j] = b[3 * i + j];
             localLambdaNodes[j] = lambdaNodes[3 * i + j];
          }
          else
          {
+            localQ[j] = q[2 * i + j];
             localB[j] = b[2 * i + j];
             localLambdaNodes[j] = lambdaNodes[2 * i + j];
          }
       }
-      elements[i] = Element( coords, 0, q, localB, localLambdaNodes, &functions );
+      elements[i] = Element( coords, 0, localQ, localB, localLambdaNodes, &functions );
    }
    elements[0].cond = boundaryConditions[0];
    elements[elemCount - 1].cond = boundaryConditions[1];
@@ -299,6 +302,8 @@ void SimpleIteration::UpdateLayerData( )
 
 double SimpleIteration::CalcResidual( )
 {
+   UpdateLayerData( );
+
    Matrix A_nonlin;
    A_nonlin.n = n;
    A_nonlin.di.assign( n, 0.0 );
@@ -343,7 +348,7 @@ double SimpleIteration::CalcResidual( )
    if ( elements[0].cond == 1 )
    {
       A_nonlin.di[0] = 1;
-      b_nonlin[0] = Condition( 1, 0 );
+      b_nonlin[0] = Condition( 1, mesh.meshX[0] );
       A_nonlin.ggu[1][1] = 0;
       A_nonlin.ggu[2][0] = 0;
    }
@@ -366,10 +371,18 @@ double SimpleIteration::CalcResidual( )
 double SimpleIteration::CalcL2Error( )
 {
    double sum = 0.0;
-   for ( int i = 0; i < mesh.n_x; i++ )
+   for ( int i = 0; i < elemCount; i++ )
    {
-      double diff = q[2 * i] - functions.u( mesh.meshX[i] );
-      sum += diff * diff;
+      double** quadrature = elements[i].basis.Quadrature();
+      double jacobian = elements[i].coords[1] - elements[i].coords[0];
+      for ( int g = 0; g < 3; g++ )
+      {
+         double xi = quadrature[g][0];
+         double weight = quadrature[g][1] * jacobian;
+         double x = elements[i].coords[0] + xi * jacobian;
+         double diff = elements[i].uh( xi ) - functions.u( x );
+         sum += weight * diff * diff;
+      }
    }
    return std::sqrt( sum );
 }
