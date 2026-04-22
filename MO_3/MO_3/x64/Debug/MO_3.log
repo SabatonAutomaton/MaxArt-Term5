@@ -1,0 +1,10 @@
+﻿  Func.cpp
+  Gauss.cpp
+C:\Users\Maksim\source\repos\MaxArt-Term6MO\MO_3\Func.cpp(69,29): error C3861: Objective: идентификатор не найден
+  Main.cpp
+  PenaltyBarrierMethod.cpp
+C:\Users\Maksim\source\repos\MaxArt-Term6MO\MO_3\PenaltyBarrierMethod.cpp(190,37): error C2039: "Objective": не является членом "Func".
+      C:\Users\Maksim\source\repos\MaxArt-Term6MO\MO_3\Func.h(3,7):
+       см. объявление "Func"
+  
+  Создание кода...

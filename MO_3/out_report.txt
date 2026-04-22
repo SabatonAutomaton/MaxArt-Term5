@@ -1,0 +1,2 @@
+method	problem	modifier	start_x	start_y	eps	r0	beta	iters	inner_iters	result_x	result_y	objective	violation_or_gap	coefficient
+barrier	task_a	-ln(-g)	-1	6	1e-05	1	10	6	43	1.999989732670989	2.999991502830154	2.000007081653756	1.770159165692675e-06	1e-05
