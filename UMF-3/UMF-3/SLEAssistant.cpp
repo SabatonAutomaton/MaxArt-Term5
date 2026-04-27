@@ -81,3 +81,31 @@ void SLEAssistant::LLtReverse( const LLt &llt, const std::vector<double> &v, std
          res[llt.jg[k]] -= llt.ggl[k] * res[i];
    }
 }
+
+void SLEAssistant::ILUDirect( const ILU &ilu,
+   const std::vector<double> &v,
+   std::vector<double> &res )
+{
+   res = v;
+   for ( int i = 0; i < ( int )res.size( ); ++i )
+   {
+      double sum = 0.0;
+      for ( int k = ilu.ig[i]; k < ilu.ig[i + 1]; ++k )
+         sum += ilu.ggl[k] * res[ilu.jg[k]];
+      res[i] -= sum;
+      // диагональ L = 1, делить не нужно
+   }
+}
+
+void SLEAssistant::ILUReverse( const ILU &ilu,
+   const std::vector<double> &v,
+   std::vector<double> &res )
+{
+   std::vector<double> z = v;
+   for ( int i = ( int )z.size( ) - 1; i >= 0; --i )
+   {
+      res[i] = z[i] / ilu.di[i];                          // U(i,i)
+      for ( int k = ilu.ig[i]; k < ilu.ig[i + 1]; ++k )
+         z[ilu.jg[k]] -= res[i] * ilu.ggu[k];            // обратная замена по U
+   }
+}

@@ -24,11 +24,11 @@ namespace
    double dusExact( ) { return 0.6 / len( ); }
    double ducExact( ) { return 0.8 / len( ); }
 
-   double lambdaCoeff( double z ) { (void)z; return 2.0; }
+   double lambdaCoeff( double z ) { ( void )z; return 2.0; }
    double dlambdaDz( ) { return 0.0; }
-   double omegaCoeff( double z ) { (void)z; return 5.0; }
-   double sigmaCoeff( double z ) { (void)z; return 0.7; }
-   double xiCoeff( double z ) { (void)z; return 0.4; }
+   double omegaCoeff( double z ) { ( void )z; return 5.0; }
+   double sigmaCoeff( double z ) { ( void )z; return 0.7; }
+   double xiCoeff( double z ) { ( void )z; return 0.4; }
 
    struct Linear3D
    {
@@ -40,25 +40,26 @@ namespace
 
    Linear3D us3DCoefs( int variant )
    {
-      if ( variant == 1 )
-      {
-         return Linear3D{ -0.15, 0.35, 0.45, -0.25 };
-      }
-      return Linear3D{ 0.2, 0.5, -0.3, 0.4 };
+
+      return Linear3D{ -0.15, 0.35, 0.45, -0.25 };
+
    }
 
    Linear3D uc3DCoefs( int variant )
    {
-      if ( variant == 1 )
-      {
-         return Linear3D{ 0.3, -0.2, 0.15, 0.5 };
-      }
-      return Linear3D{ -0.1, 0.4, 0.2, -0.25 };
+
+      return Linear3D{ 0.3, -0.2, 0.15, 0.5 };
+
    }
 
    double evalLinear3D( const Linear3D &c, double x, double y, double z )
    {
       return c.c0 + c.cx * x + c.cy * y + c.cz * z;
+   }
+
+   double evalNonLinear3D( const Linear3D &c, double x, double y, double z )
+   {
+      return c.cx * x*x + c.cy * y*y + c.cz * z*z;
    }
 }
 
@@ -70,8 +71,8 @@ void Func::SetDomain( double left, double right )
 
 double Func::u( double x )
 {
-    (void)x;
-    return 0.0;
+   ( void )x;
+   return 0.0;
 }
 
 double Func::fc( double x )
@@ -130,25 +131,25 @@ double Func::thetaC( double x )
 
 double Func::beta( double x )
 {
-   (void)x;
+   ( void )x;
    return 0.0;
 }
 
 double Func::uBetaS( double x )
 {
-   (void)x;
+   ( void )x;
    return 0.0;
 }
 
 double Func::uBetaC( double x )
 {
-   (void)x;
+   ( void )x;
    return 0.0;
 }
 
 double Func::boundaryValue( int number, double x )
 {
-   (void)x;
+   ( void )x;
    if ( number == 0 ) // Синусная компонента A^s
       return usExact( gLeftZ );
    if ( number == 1 ) // Косинусная компонента A^c
@@ -156,69 +157,91 @@ double Func::boundaryValue( int number, double x )
    return 0.0;
 }
 
-double Func::lambda3D( int variant, double x, double y, double z )
+double Func::lambda3D( int variant, double x, double y, double z ) const
 {
-   (void)variant;
-   (void)x;
-   (void)y;
-   (void)z;
-   return 1.3;
+   ( void )variant;
+   ( void )x;
+   ( void )y;
+   ( void )z;
+   return lambdaVal;
 }
 
-double Func::w3D( int variant, double x, double y, double z )
+double Func::w3D( int variant, double x, double y, double z ) const
 {
-   (void)variant;
-   (void)x;
-   (void)y;
-   (void)z;
-   return 2.0;
+   ( void )variant;
+   ( void )x;
+   ( void )y;
+   ( void )z;
+   return wVal;
 }
 
-double Func::sigma3D( int variant, double x, double y, double z )
+double Func::sigma3D( int variant, double x, double y, double z ) const
 {
-   (void)variant;
-   (void)x;
-   (void)y;
-   (void)z;
-   return 0.4;
+   ( void )variant;
+   ( void )x;
+   ( void )y;
+   ( void )z;
+   return sigmaVal;
 }
 
-double Func::xi3D( int variant, double x, double y, double z )
+double Func::xi3D( int variant, double x, double y, double z ) const
 {
-   (void)variant;
-   (void)x;
-   (void)y;
-   (void)z;
-   return 0.6;
+   ( void )variant;
+   ( void )x;
+   ( void )y;
+   ( void )z;
+   return xiVal;
 }
 
-double Func::us3DExact( int variant, double x, double y, double z )
+double Func::us3DExact( int variant, double x, double y, double z ) const
 {
-   return evalLinear3D( us3DCoefs( variant ), x, y, z );
+   if ( variant == 2 )
+      return evalLinear3D( us3DCoefs( variant ), x, y, z );
+   else
+      return evalNonLinear3D( us3DCoefs( variant ), x, y, z );
 }
 
-double Func::uc3DExact( int variant, double x, double y, double z )
+double Func::uc3DExact( int variant, double x, double y, double z ) const
 {
-   return evalLinear3D( uc3DCoefs( variant ), x, y, z );
+   if ( variant == 2 )
+      return evalLinear3D( uc3DCoefs( variant ), x, y, z );
+   else
+      return evalNonLinear3D( uc3DCoefs( variant ), x, y, z );
 }
 
-double Func::fs3D( int variant, double x, double y, double z )
+double Func::LapUs( int variant, double x, double y, double z ) const
+{
+   if ( variant == 2 )
+      return 0;
+   else
+      return us3DCoefs( variant ).cx+ us3DCoefs( variant ).cy+ us3DCoefs( variant ).cz;
+}
+
+double Func::LapUc( int variant, double x, double y, double z ) const
+{
+   if ( variant == 2 )
+      return 0;
+   else
+      return uc3DCoefs( variant ).cx + uc3DCoefs( variant ).cy + uc3DCoefs( variant ).cz;
+}
+
+double Func::fs3D( int variant, double x, double y, double z ) const
 {
    const double lambdaVal = lambda3D( variant, x, y, z );
    const double wVal = w3D( variant, x, y, z );
    const double sigmaVal = sigma3D( variant, x, y, z );
    const double xiVal = xi3D( variant, x, y, z );
-   const double lapUs = 0.0; // Лапласиан линейной функции.
+   const double lapUs = LapUc( variant, x, y, z );
    return -lambdaVal * lapUs - ( wVal * wVal ) * xiVal * us3DExact( variant, x, y, z ) - wVal * sigmaVal * uc3DExact( variant, x, y, z );
 }
 
-double Func::fc3D( int variant, double x, double y, double z )
+double Func::fc3D( int variant, double x, double y, double z ) const
 {
    const double lambdaVal = lambda3D( variant, x, y, z );
    const double wVal = w3D( variant, x, y, z );
    const double sigmaVal = sigma3D( variant, x, y, z );
    const double xiVal = xi3D( variant, x, y, z );
-   const double lapUc = 0.0; // Лапласиан линейной функции.
+   const double lapUc = LapUc( variant, x, y, z );
    return -lambdaVal * lapUc - ( wVal * wVal ) * xiVal * uc3DExact( variant, x, y, z ) + wVal * sigmaVal * us3DExact( variant, x, y, z );
 }
 

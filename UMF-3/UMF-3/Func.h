@@ -18,13 +18,19 @@ public:
    double boundaryValue( int number, double x );
 
    // 3D тестовые функции для гармонической системы.
-   double lambda3D( int variant, double x, double y, double z );
-   double w3D( int variant, double x, double y, double z );
-   double sigma3D( int variant, double x, double y, double z );
-   double xi3D( int variant, double x, double y, double z );
-   double us3DExact( int variant, double x, double y, double z );
-   double uc3DExact( int variant, double x, double y, double z );
-   double fs3D( int variant, double x, double y, double z );
-   double fc3D( int variant, double x, double y, double z );
+   double lambdaVal;
+   double wVal;
+   double sigmaVal;
+   double xiVal;
+   double lambda3D( int variant, double x, double y, double z ) const;
+   double w3D( int variant, double x, double y, double z ) const;
+   double sigma3D( int variant, double x, double y, double z ) const;
+   double xi3D( int variant, double x, double y, double z ) const;
+   double us3DExact( int variant, double x, double y, double z ) const;
+   double uc3DExact( int variant, double x, double y, double z ) const;
+   double LapUs( int variant, double x, double y, double z ) const;
+   double LapUc( int variant, double x, double y, double z ) const;
+   double fs3D( int variant, double x, double y, double z ) const;
+   double fc3D( int variant, double x, double y, double z ) const;
 };
 

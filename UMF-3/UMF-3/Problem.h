@@ -19,6 +19,13 @@ public:
    const std::vector<double> &GetSolution( ) const { return q; }
 
 private:
+   struct L2Errors3D
+   {
+      double us = 0.0;
+      double uc = 0.0;
+      double u = 0.0;
+   };
+
    enum class SolveMethod
    {
       LU,
@@ -44,7 +51,7 @@ private:
    std::vector<double> q3d;
    std::vector<double> usExact3D;
    std::vector<double> ucExact3D;
-   bool use3DLinearVariant2 = false;
+   int current3DTestNumber = 2;
 
    void Input( );
    void BuildMatrix( );
@@ -53,13 +60,14 @@ private:
    void ApplyDirichlet( int dof, double value );
    void PrintResult( ) const;
 
-   void Input3D( bool quadraticExact );
+   void Input3D( int testNumber );
    void BuildMatrix3D( );
    void BuildB3D( );
    void ApplyDirichlet3D( int dof, double value );
    void Solve3D( );
-   void PrintResult3D( ) const;
-   void Run3DHarmonicTest( bool quadraticExact );
+   void PrintResult3D( );
+   void Run3DHarmonicTest( int testNumber );
+   L2Errors3D ComputeL2Errors3D( double t ) const;
 
    Mesh mesh;
    Mesh3D mesh3d;

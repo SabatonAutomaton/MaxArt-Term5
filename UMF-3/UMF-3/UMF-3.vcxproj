@@ -132,6 +132,7 @@
     <ClInclude Include="Element.h" />
     <ClInclude Include="Element3D.h" />
     <ClInclude Include="Func.h" />
+    <ClInclude Include="ILU.h" />
     <ClInclude Include="LLt.h" />
     <ClInclude Include="LU.h" />
     <ClInclude Include="Mesh.h" />
@@ -149,6 +150,7 @@
     <ClCompile Include="Element.cpp" />
     <ClCompile Include="Element3D.cpp" />
     <ClCompile Include="Func.cpp" />
+    <ClCompile Include="ILU.cpp" />
     <ClCompile Include="LLt.cpp" />
     <ClCompile Include="LU.cpp" />
     <ClCompile Include="Main.cpp" />

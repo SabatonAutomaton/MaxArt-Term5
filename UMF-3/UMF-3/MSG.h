@@ -10,4 +10,5 @@ public:
    static std::vector<double> SolutionWithDiagonalConditioning( SLE sle );
    static std::vector<double> SolutionWithLUConditioning( SLE sle );
    static std::vector<double> SolutionWithLLtConditioning( SLE sle );
+   static std::vector<double> SolutionWithILUConditioning( SLE sle );
 };

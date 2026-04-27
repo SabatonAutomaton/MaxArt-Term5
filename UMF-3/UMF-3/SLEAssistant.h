@@ -2,6 +2,7 @@
 #include "SLE.h"
 #include "LU.h"
 #include "LLt.h"
+#include "ILU.h"
 
 class SLEAssistant
 {
@@ -42,6 +43,16 @@ public:
    );
    static void LLtReverse(
       const LLt &llt,
+      const std::vector<double> &v,
+      std::vector<double> &res
+   );
+   static void ILUDirect(
+      const ILU &ilu,
+      const std::vector<double> &v,
+      std::vector<double> &res
+   );
+   static void ILUReverse(
+      const ILU &ilu,
       const std::vector<double> &v,
       std::vector<double> &res
    );
