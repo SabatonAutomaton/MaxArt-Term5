@@ -60,7 +60,7 @@ void SimpleRandomSearch::Search(double x_min, double x_max, double y_min, double
 		x[0] = getRandomDouble(x_min, x_max);
 		x[1] = getRandomDouble(y_min, y_max);
 
-		logPoint("S", x[0], x[1]);
+		//logPoint("S", x[0], x[1]);
 	}
 	func_0 = func.f(x[0], x[1]);
 
@@ -70,9 +70,9 @@ void SimpleRandomSearch::Search(double x_min, double x_max, double y_min, double
 		double y_1 = getRandomDouble(y_min, y_max);
 		func_1 = func.f(x_1, y_1);
 
-		logAllPoint("P", x_1, y_1);
+		//logAllPoint("P", x_1, y_1);
 
-		logPoint("R", x_1, y_1);
+		//logPoint("R", x_1, y_1);
 
 		if (func_1 < func_0)
 		{
@@ -80,7 +80,7 @@ void SimpleRandomSearch::Search(double x_min, double x_max, double y_min, double
 			x[1] = y_1;
 			func_0 = func_1;
 
-			logPoint("B", x[0], x[1]);
+			//logPoint("B", x[0], x[1]);
 
 			if (Ifbreak) break;
 		}
@@ -191,20 +191,12 @@ void SimpleRandomSearch::algorithm_2()
 	for (int k = 0; k < m_global; k++)
 	{
 		bool found = false;
-		double radius = 1.0;
 
 		for (int attempt = 0; attempt < m; attempt++)
 		{
 
-			double x_rand = getRandomDouble(
-				std::max(x[0] - radius, x_a),
-				std::min(x[0] + radius, x_b)
-			);
-
-			double y_rand = getRandomDouble(
-				std::max(x[1] - radius, y_a),
-				std::min(x[1] + radius, y_b)
-			);
+			double x_rand = getRandomDouble(x_a, x_b);
+			double y_rand = getRandomDouble(y_a, y_b);
 
 			double f_rand = func.f(x_rand, y_rand);
 
@@ -221,8 +213,6 @@ void SimpleRandomSearch::algorithm_2()
 				found = true;
 				break;
 			}
-
-			radius *= 0.5;
 		}
 
 		if (!found)

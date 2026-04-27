@@ -14,15 +14,15 @@ int main()
 		method.log_file.open("simple.txt");
 		method.Search();
 		std::cout << "Simple search:\n";
-		std::cout << "min f(x,y): " << method.func_0 << '\n';
-		std::cout << "min x: " << method.x[0] << '\n' << "min y: " << method.x[1] << '\n';
+		std::cout << "f(x,y): " << method.func_0 << '\n';
+		std::cout << "x: " << method.x[0] << '\n' << "y: " << method.x[1] << '\n';
 	}
 	else if (MethodType == 2)
 	{
 		method.hyperquadrate();
 		std::cout << "Method hyperquadrate:\n";
-		std::cout << "min f(x,y): " << method.func_0 << '\n';
-		std::cout << "min x: " << method.x[0] << '\n' << "min y: " << method.x[1] << '\n';
+		std::cout << "f(x,y): " << method.func_0 << '\n';
+		std::cout << "x: " << method.x[0] << '\n' << "y: " << method.x[1] << '\n';
 		std::cout << "Count_use_function: " << method.func.count_use_f << '\n';
 	}
 	else if (MethodType == 3)
@@ -32,8 +32,8 @@ int main()
 		method.log_file.close();
 
 		std::cout << "algorithm_1:\n";
-		std::cout << "min f(x,y): " << method.func_0 << '\n';
-		std::cout << "min x: " << method.x[0] << '\n' << "min y: " << method.x[1] << '\n';
+		std::cout << "f(x,y): " << method.func_0 << '\n';
+		std::cout << "x: " << method.x[0] << '\n' << "y: " << method.x[1] << '\n';
 		std::cout << "Count_use_function: " << method.func.count_use_f << '\n';
 	}
 	else if (MethodType == 4)
@@ -43,8 +43,8 @@ int main()
 		method.log_file.close();
 
 		std::cout << "algorithm_2:\n";
-		std::cout << "min f(x,y): " << method.func_0 << '\n';
-		std::cout << "min x: " << method.x[0] << '\n' << "min y: " << method.x[1] << '\n';
+		std::cout << "f(x,y): " << method.func_0 << '\n';
+		std::cout << "x: " << method.x[0] << '\n' << "y: " << method.x[1] << '\n';
 		std::cout << "Count_use_function: " << method.func.count_use_f << '\n';
 	}
 	else if (MethodType == 5)
@@ -54,8 +54,8 @@ int main()
 		method.log_file.close();
 
 		std::cout << "algorithm_3:\n";
-		std::cout << "min f(x,y): " << method.func_0 << '\n';
-		std::cout << "min x: " << method.x[0] << '\n' << "min y: " << method.x[1] << '\n';
+		std::cout << "f(x,y): " << method.func_0 << '\n';
+		std::cout << "x: " << method.x[0] << '\n' << "y: " << method.x[1] << '\n';
 		std::cout << "Count_use_function: " << method.func.count_use_f << '\n';
 	}
 	else
