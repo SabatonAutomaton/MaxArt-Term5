@@ -256,53 +256,36 @@ void SimpleRandomSearch::algorithm_3()
 
 	for (int k = 0; k < m_global; k++)
 	{
-		std::vector<double> x0 = x;
+		logPoint("L", x[0], x[1]);
 
 		double dx = getRandomDouble(-1.0, 1.0);
 		double dy = getRandomDouble(-1.0, 1.0);
 
-		double step = 0.2;
+		double step = 5.0;
 
-		std::vector<double> x_new = x;
-		double f_prev = func_0;
-
-		while (true)
+		std::vector<double> x_jump =
 		{
-			std::vector<double> candidate =
-			{
-				 x_new[0] + step * dx,
-				 x_new[1] + step * dy
-			};
+			 x[0] + step * dx,
+			 x[1] + step * dy
+		};
 
-			if (candidate[0] < x_a || candidate[0] > x_b ||
-				candidate[1] < y_a || candidate[1] > y_b)
-				break;
-
-			double f_new = func.f(candidate[0], candidate[1]);
-
-			logPoint("R", candidate[0], candidate[1]);
-
-			if (f_new < f_prev)
-			{
-				x_new = candidate;
-				f_prev = f_new;
-
-				logPoint("B", x_new[0], x_new[1]);
-			}
-			else
-			{
-				break;
-			}
+		if (x_jump[0] < x_a || x_jump[0] > x_b ||
+			x_jump[1] < y_a || x_jump[1] > y_b)
+		{
+			continue;
 		}
 
+		logPoint("J", x_jump[0], x_jump[1]);
 
-		x = x_new;
+		x = x_jump;
+		func_0 = func.f(x[0], x[1]);
 
 		std::vector<double> a_local =
 		{
 			 std::max(x[0] - 1.0, x_a),
 			 std::max(x[1] - 1.0, y_a)
 		};
+
 		std::vector<double> b_local =
 		{
 			 std::min(x[0] + 1.0, x_b),
@@ -311,14 +294,16 @@ void SimpleRandomSearch::algorithm_3()
 
 		hyperquadrate(a_local, b_local, false);
 
-
 		if (func_0 < best_f)
 		{
 			best_f = func_0;
 			best_x = x;
+
+			logPoint("B", x[0], x[1]);
 		}
 		else
 		{
+
 			x = best_x;
 			func_0 = best_f;
 		}
@@ -326,6 +311,8 @@ void SimpleRandomSearch::algorithm_3()
 
 	x = best_x;
 	func_0 = best_f;
+
+	logPoint("F", x[0], x[1]);
 }
 
 void SimpleRandomSearch::logPoint(const std::string& type, double x, double y)
