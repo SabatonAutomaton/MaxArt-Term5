@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell.exe *)",
+      "Bash(python -m pip install openpyxl --quiet)",
+      "Bash(python -c ' *)",
+      "Bash(python3 -m pip install openpyxl --user --quiet)",
+      "Bash(python3 -c ' *)",
+      "Bash(\"/c/Program Files/Microsoft Visual Studio/18/Insiders/MSBuild/Current/Bin/amd64/MSBuild.exe\" UMF-3.vcxproj -p:Configuration=Release -p:Platform=x64)",
+      "Bash(./x64/Release/UMF-3.exe 2)",
+      "Bash(chmod +x run_tests.sh)",
+      "Bash(./run_tests.sh)",
+      "Bash(tee test_results.txt)",
+      "Bash(tee test_results_full.txt)",
+      "Bash(chmod +x run_tests_correct.sh)",
+      "Bash(./run_tests_correct.sh)",
+      "Bash(tee test_results_correct.txt)",
+      "Bash(tee test_results_final.txt)",
+      "Bash(./x64/Release/UMF-3.exe)"
+    ]
+  }
+}

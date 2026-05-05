@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="RGZUpRes/RGZUpRes.vcxproj" Id="1e4a7458-777f-4e9f-af37-bcbbcaee608d" />
+</Solution>

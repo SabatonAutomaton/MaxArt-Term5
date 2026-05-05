@@ -3,6 +3,7 @@
 #include "Quadratures.h"
 #include "LU.h"
 #include "MSG.h"
+#include "BCGSTAB.h"
 #include "SLE.h"
 #include "SLEAssistant.h"
 #include <algorithm>
@@ -54,6 +55,10 @@ void Problem::Input( )
       if ( mode == "MSG" )
       {
          solveMethod = SolveMethod::MSGDiagonal;
+      }
+      else if ( mode == "BCGSTAB" )
+      {
+         solveMethod = SolveMethod::BCGSTAB;
       }
       else
       {
@@ -259,13 +264,25 @@ void Problem::Solve( )
       q = MSG::SolutionWithDiagonalConditioning( sle );
       std::cout << "Solver: MSG (diagonal preconditioning)\n";
    }
+   else if ( solveMethod == SolveMethod::BCGSTAB )
+   {
+      SLE sle;
+      sle.matrix = matrix;
+      sle.f = b;
+      sle.x.assign( n, 0.0 );
+      sle.maxIter = 10000;
+      sle.eps = 1e-12;
+      q = BCGSTAB::SolutionWithDiagonalConditioning( sle );
+      std::cout << "Solver: BCGSTAB (diagonal preconditioning)\n";
+   }
    else
    {
-      LU lu( matrix );
-      std::vector<double> y( n, 0.0 );
-      q.assign( n, 0.0 );
-      SLEAssistant::LUDirect( lu, b, y );
-      SLEAssistant::LUReverse( lu, y, q );
+      Matrix denseMatrix = ConvertToMatrix( matrix );
+      LU lu( denseMatrix, b );
+      lu.calcLU( );
+      lu.calcY( );
+      lu.calcQ( );
+      q = lu.q;
       std::cout << "Solver: LU\n";
    }
    auto end = std::chrono::steady_clock::now( );
@@ -353,6 +370,10 @@ void Problem::Input3D( int testNumber )
       if ( mode == "MSG" )
       {
          solveMethod = SolveMethod::MSGDiagonal;
+      }
+      else if ( mode == "BCGSTAB" )
+      {
+         solveMethod = SolveMethod::BCGSTAB;
       }
       else
       {
@@ -634,8 +655,14 @@ void Problem::Solve3D( )
       }
       reduced.di[k] = matrix.di[row];
    }
-
+   Matrix denseMatrix;
    std::vector<double> qFree( nFree, 0.0 );
+   if ( solveMethod == SolveMethod::LU )
+   {
+      denseMatrix = ConvertToMatrix( reduced );
+      std::cout << "Converting done!";
+   }
+      
    auto start = std::chrono::steady_clock::now( );
 
    if ( solveMethod == SolveMethod::MSGDiagonal )
@@ -649,12 +676,24 @@ void Problem::Solve3D( )
       qFree = MSG::SolutionWithDiagonalConditioning( sle );
       std::cout << "Solver: MSG (diagonal preconditioning)\n";
    }
+   else if ( solveMethod == SolveMethod::BCGSTAB )
+   {
+      SLE sle;
+      sle.matrix = reduced;
+      sle.f = bFree;
+      sle.x.assign( nFree, 0.0 );
+      sle.maxIter = 1000;
+      sle.eps = 1e-15;
+      qFree = BCGSTAB::SolutionWithDiagonalConditioning( sle );
+      std::cout << "Solver: BCGSTAB (diagonal preconditioning)\n";
+   }
    else
    {
-      LU lu( reduced );
-      std::vector<double> y( nFree, 0.0 );
-      SLEAssistant::LUDirect( lu, bFree, y );
-      SLEAssistant::LUReverse( lu, y, qFree );
+      LU lu( denseMatrix, bFree );
+      lu.calcLU( );
+      lu.calcY( );
+      lu.calcQ( );
+      qFree = lu.q;
       std::cout << "Solver: LU\n";
    }
 
@@ -803,4 +842,43 @@ Problem::L2Errors3D Problem::ComputeL2Errors3D( double t ) const
    const double l2ErrUc = std::sqrt( std::max( 0.0, l2ErrUc2 ) );
    const double l2ErrU = std::sqrt( std::max( 0.0, l2ErrU2 ) );
    return L2Errors3D{ l2ErrUs, l2ErrUc, l2ErrU };
+}
+
+Matrix Problem::ConvertToMatrix( const SparseMatrix &sparse ) const
+{
+   Matrix dense;
+   dense.n = sparse.n;
+   dense.di = sparse.di;
+
+   // Вычисляем максимальную ширину ленты и сразу заполняем матрицу
+   int maxBandwidth = 0;
+
+   // Первый проход - только для определения ширины
+   for ( int i = 0; i < sparse.n; ++i )
+   {
+      if ( sparse.ig[i + 1] > sparse.ig[i] )
+      {
+         const int j = sparse.jg[sparse.ig[i]];
+         const int bandwidth = i - j;
+         maxBandwidth = std::max( maxBandwidth, bandwidth );
+      }
+   }
+
+   dense.ggl.assign( sparse.n, std::vector<double>( maxBandwidth, 0.0 ) );
+   dense.ggu.assign( sparse.n, std::vector<double>( maxBandwidth, 0.0 ) );
+
+   // Второй проход - заполнение
+   for ( int i = 0; i < sparse.n; ++i )
+   {
+      for ( int k = sparse.ig[i]; k < sparse.ig[i + 1]; ++k )
+      {
+         const int j = sparse.jg[k];
+         const int jl = maxBandwidth - (i - j);
+
+         dense.ggl[i][jl] = sparse.ggl[k];
+         dense.ggu[i][jl] = sparse.ggu[k];
+      }
+   }
+
+   return dense;
 }

@@ -31,8 +31,8 @@ void SLEAssistant::LUDirect( const LU &lu, const std::vector<double> &v, std::ve
    for ( int i = 0; i < res.size( ); ++i )
    {
       sum = 0;
-      for ( int k = lu.ig[i]; k < lu.ig[i + 1]; ++k )
-         sum += lu.ggl[k] * res[lu.jg[k]];
+      for ( int k = 0; k < lu.matrix.ggl[i].size( ); ++k )
+         sum += lu.matrix.ggl[i][k] * res[i - k - 1];
       res[i] -= sum;
    }
 }
@@ -42,9 +42,9 @@ void SLEAssistant::LUReverse( const LU &lu, const std::vector<double> &v, std::v
    std::vector<double> z = v;
    for ( int i = z.size( ) - 1; i >= 0; --i )
    {
-      res[i] = z[i] / lu.di[i];
-      for ( int k = lu.ig[i]; k < lu.ig[i + 1]; ++k )
-         z[lu.jg[k]] -= res[i] * lu.ggu[k];
+      res[i] = z[i] / lu.matrix.di[i];
+      for ( int k = 0; k < lu.matrix.ggu[i].size( ); ++k )
+         z[i - k - 1] -= res[i] * lu.matrix.ggu[i][k];
    }
 }
 

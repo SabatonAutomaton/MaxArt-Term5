@@ -1,11 +1,27 @@
 #pragma once
-
-#include "SparseMatrix.h"
-
-class LU : public SparseMatrix
+#include "Matrix.h"
+#include <vector>
+class LU
 {
 public:
-   std::vector<double> ggu;
+   LU( ) {}
+   LU( Matrix _matrix, std::vector<double> _b )
+   {
+      matrix = _matrix;
+      b = _b;
+      y = std::vector<double>( matrix.n, 0.0 );
+      q = std::vector<double>( matrix.n, 0.0 );
+   }
+   Matrix matrix;
+   std::vector<double> b;
+   std::vector<double> y;
+   std::vector<double> q;
 
-   LU( const SparseMatrix &matrix );
+   void calcLU( );
+
+   void calcY( );
+
+   void calcQ( );
+
 };
+

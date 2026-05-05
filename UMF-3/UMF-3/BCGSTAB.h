@@ -3,10 +3,8 @@
 #include "SLEAssistant.h"
 #include <iostream>
 
-class MSG
+class BCGSTAB
 {
 public:
-   static std::vector<double> SolutionWithoutConditioning( SLE sle );
    static std::vector<double> SolutionWithDiagonalConditioning( SLE sle );
 };
-
