@@ -54,10 +54,10 @@ void SLEAssistant::DiagonalPreconditionMSG( SparseMatrix &M, std::vector<double>
       res[i] = v[i] / M.di[i];
 }
 
-void SLEAssistant::DiagonalPreconditionLOS( SparseMatrix &M, std::vector<double> &v, std::vector<double> &res )
+void SLEAssistant::DiagonalPreconditionLOS(SparseMatrix& M, std::vector<double>& v, std::vector<double>& res)
 {
-   for ( int i = 0; i < M.n; ++i )
-      res[i] = v[i] / sqrt( M.di[i] );
+    for (int i = 0; i < M.n; ++i)
+        res[i] = v[i] / M.di[i];
 }
 
 void SLEAssistant::LLtDirect( const LLt &llt, const std::vector<double> &v, std::vector<double> &res )

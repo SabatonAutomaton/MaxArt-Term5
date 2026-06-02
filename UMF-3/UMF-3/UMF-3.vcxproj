@@ -29,26 +29,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -140,7 +140,7 @@
     <ClInclude Include="MatrixOperations.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Mesh3D.h" />
-    <ClInclude Include="MSG.h" />
+    <ClInclude Include="LOS.h" />
     <ClInclude Include="Problem.h" />
     <ClInclude Include="Quadratures.h" />
     <ClInclude Include="SLE.h" />
@@ -162,7 +162,7 @@
     <ClCompile Include="MatrixOperations.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Mesh3D.cpp" />
-    <ClCompile Include="MSG.cpp" />
+    <ClCompile Include="LOS.cpp" />
     <ClCompile Include="Problem.cpp" />
     <ClCompile Include="Quadratures.cpp" />
     <ClCompile Include="SLE.cpp" />

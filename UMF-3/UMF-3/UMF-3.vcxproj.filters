@@ -36,7 +36,7 @@
     <ClInclude Include="Problem.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="MSG.h">
+    <ClInclude Include="LOS.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="SLE.h">
@@ -69,6 +69,9 @@
     <ClInclude Include="MatrixOperations.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="BCGSTAB.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Element.cpp">
@@ -92,7 +95,7 @@
     <ClCompile Include="Problem.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="MSG.cpp">
+    <ClCompile Include="LOS.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="SLE.cpp">
@@ -123,6 +126,9 @@
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="MatrixOperations.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="BCGSTAB.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>

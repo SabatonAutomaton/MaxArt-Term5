@@ -193,36 +193,107 @@ double Func::xi3D( int variant, double x, double y, double z ) const
    return xiVal;
 }
 
-double Func::us3DExact( int variant, double x, double y, double z ) const
+double evalPoly3D(int p, double x, double y, double z)
 {
-   if ( variant == 2 )
-      return evalLinear3D( us3DCoefs( variant ), x, y, z );
-   else
-      return evalNonLinear3D( us3DCoefs( variant ), x, y, z );
+    return std::pow(x, p)
+        + std::pow(y, p)
+        + std::pow(z, p);
 }
 
-double Func::uc3DExact( int variant, double x, double y, double z ) const
+double lapPoly3D(int p, double x, double y, double z)
 {
-   if ( variant == 2 )
-      return evalLinear3D( uc3DCoefs( variant ), x, y, z );
-   else
-      return evalNonLinear3D( uc3DCoefs( variant ), x, y, z );
+    if (p < 2)
+        return 0.0;
+
+    return p * (p - 1) *
+        (std::pow(x, p - 2)
+            + std::pow(y, p - 2)
+            + std::pow(z, p - 2));
 }
 
-double Func::LapUs( int variant, double x, double y, double z ) const
+
+double Func::us3DExact(
+    int variant,
+    double x,
+    double y,
+    double z) const
 {
-   if ( variant == 2 )
-      return 0;
-   else
-      return us3DCoefs( variant ).cx+ us3DCoefs( variant ).cy+ us3DCoefs( variant ).cz;
+    if (variant == 2)
+        return evalLinear3D(us3DCoefs(variant), x, y, z);
+
+    if (variant >= 10)
+    {
+        const int p = variant - 9;
+        return evalPoly3D(p, x, y, z);
+    }
+
+    return evalNonLinear3D(
+        us3DCoefs(variant),
+        x,
+        y,
+        z);
 }
 
-double Func::LapUc( int variant, double x, double y, double z ) const
+double Func::uc3DExact(
+    int variant,
+    double x,
+    double y,
+    double z) const
 {
-   if ( variant == 2 )
-      return 0;
-   else
-      return uc3DCoefs( variant ).cx + uc3DCoefs( variant ).cy + uc3DCoefs( variant ).cz;
+    if (variant == 2)
+        return evalLinear3D(uc3DCoefs(variant), x, y, z);
+
+    if (variant >= 10)
+    {
+        const int p = variant - 9;
+        return 0.5 * evalPoly3D(p, x, y, z);
+    }
+
+    return evalNonLinear3D(
+        uc3DCoefs(variant),
+        x,
+        y,
+        z);
+}
+
+double Func::LapUs(
+    int variant,
+    double x,
+    double y,
+    double z) const
+{
+    if (variant == 2)
+        return 0.0;
+
+    if (variant >= 10)
+    {
+        const int p = variant - 9;
+        return lapPoly3D(p, x, y, z);
+    }
+
+    return us3DCoefs(variant).cx
+        + us3DCoefs(variant).cy
+        + us3DCoefs(variant).cz;
+}
+
+double Func::LapUc(
+    int variant,
+    double x,
+    double y,
+    double z) const
+{
+    if (variant == 2)
+        return 0.0;
+
+    if (variant >= 10)
+    {
+        const int p = variant - 9;
+        return 0.5 * lapPoly3D(p, x, y, z);
+    }
+
+    return uc3DCoefs(variant).cx
+        + uc3DCoefs(variant).cy
+        + uc3DCoefs(variant).cz;
 }
 
 double Func::fs3D( int variant, double x, double y, double z ) const
@@ -231,7 +302,7 @@ double Func::fs3D( int variant, double x, double y, double z ) const
    const double wVal = w3D( variant, x, y, z );
    const double sigmaVal = sigma3D( variant, x, y, z );
    const double xiVal = xi3D( variant, x, y, z );
-   const double lapUs = LapUc( variant, x, y, z );
+   const double lapUs = LapUs( variant, x, y, z );
    return -lambdaVal * lapUs - ( wVal * wVal ) * xiVal * us3DExact( variant, x, y, z ) - wVal * sigmaVal * uc3DExact( variant, x, y, z );
 }
 
@@ -244,4 +315,3 @@ double Func::fc3D( int variant, double x, double y, double z ) const
    const double lapUc = LapUc( variant, x, y, z );
    return -lambdaVal * lapUc - ( wVal * wVal ) * xiVal * uc3DExact( variant, x, y, z ) + wVal * sigmaVal * us3DExact( variant, x, y, z );
 }
-

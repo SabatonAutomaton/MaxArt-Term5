@@ -2,7 +2,7 @@
 #include "Basis3D.h"
 #include "Quadratures.h"
 #include "LU.h"
-#include "MSG.h"
+#include "LOS.h"
 #include "BCGSTAB.h"
 #include "SLE.h"
 #include "SLEAssistant.h"
@@ -18,27 +18,51 @@
 #include <stdexcept>
 #include <chrono>
 
-void Problem::Run( int testCase )
+void Problem::Run(int testCase)
 {
-   if ( testCase == 1 )
-   {
-      dimension = Dimension::OneD;
-      Input( );
-      BuildMatrix( );
-      BuildB( );
-      Solve( );
-      PrintResult( );
-      return;
-   }
+    if (testCase == 1)
+    {
+        dimension = Dimension::OneD;
 
-   if ( testCase >= 2 )
-   {
-      dimension = Dimension::ThreeD;
-      Run3DHarmonicTest( testCase );
-      return;
-   }
+        Input();
+        BuildMatrix();
+        BuildB();
+        Solve();
+        PrintResult();
 
-   throw std::runtime_error( "Unknown test case. Use 1 (1D) or >=2 (3D harmonic tests)." );
+        return;
+    }
+
+    if (testCase == 4)
+    {
+        dimension = Dimension::ThreeD;
+
+        for (int p = 1; p <= 4; ++p)
+        {
+            std::cout << "\n====================\n";
+            std::cout << "Polynomial degree p = "
+                << p
+                << "\n";
+            std::cout << "====================\n";
+
+            Run3DHarmonicTest(p + 9);
+        }
+
+        return;
+    }
+
+    if (testCase >= 2)
+    {
+        dimension = Dimension::ThreeD;
+
+        Run3DHarmonicTest(testCase);
+
+        return;
+    }
+
+    throw std::runtime_error(
+        "Unknown test case."
+    );
 }
 
 void Problem::Input( )
@@ -52,9 +76,9 @@ void Problem::Input( )
       std::string mode;
       solverFile >> mode;
       std::transform( mode.begin( ), mode.end( ), mode.begin( ), []( unsigned char c ) { return static_cast<char>( std::toupper( c ) ); } );
-      if ( mode == "MSG" )
+      if ( mode == "LOS" )
       {
-         solveMethod = SolveMethod::MSGDiagonal;
+         solveMethod = SolveMethod::LOSDiagonal;
       }
       else if ( mode == "BCGSTAB" )
       {
@@ -253,7 +277,7 @@ void Problem::Solve( )
    ApplyDirichlet( 2 * leftNode + 1, func.boundaryValue( 1, mesh.meshX[leftNode] ) );
 
    auto start = std::chrono::steady_clock::now( );
-   if ( solveMethod == SolveMethod::MSGDiagonal )
+   if ( solveMethod == SolveMethod::LOSDiagonal )
    {
       SLE sle;
       sle.matrix = matrix;
@@ -261,8 +285,8 @@ void Problem::Solve( )
       sle.x.assign( n, 0.0 );
       sle.maxIter = 10000;
       sle.eps = 1e-12;
-      q = MSG::SolutionWithDiagonalConditioning( sle );
-      std::cout << "Solver: MSG (diagonal preconditioning)\n";
+      q = LOS::SolutionWithDiagonalConditioning( sle );
+      std::cout << "Solver: LOS (diagonal preconditioning)\n";
    }
    else if ( solveMethod == SolveMethod::BCGSTAB )
    {
@@ -367,9 +391,9 @@ void Problem::Input3D( int testNumber )
       std::string mode;
       solverFile >> mode;
       std::transform( mode.begin( ), mode.end( ), mode.begin( ), []( unsigned char c ) { return static_cast<char>( std::toupper( c ) ); } );
-      if ( mode == "MSG" )
+      if ( mode == "LOS" )
       {
-         solveMethod = SolveMethod::MSGDiagonal;
+         solveMethod = SolveMethod::LOSDiagonal;
       }
       else if ( mode == "BCGSTAB" )
       {
@@ -665,7 +689,7 @@ void Problem::Solve3D( )
       
    auto start = std::chrono::steady_clock::now( );
 
-   if ( solveMethod == SolveMethod::MSGDiagonal )
+   if ( solveMethod == SolveMethod::LOSDiagonal )
    {
       SLE sle;
       sle.matrix = reduced;
@@ -673,8 +697,8 @@ void Problem::Solve3D( )
       sle.x.assign( nFree, 0.0 );
       sle.maxIter = 1000;
       sle.eps = 1e-15;
-      qFree = MSG::SolutionWithDiagonalConditioning( sle );
-      std::cout << "Solver: MSG (diagonal preconditioning)\n";
+      qFree = LOS::SolutionWithDiagonalConditioning( sle );
+      std::cout << "Solver: LOS (diagonal preconditioning)\n";
    }
    else if ( solveMethod == SolveMethod::BCGSTAB )
    {

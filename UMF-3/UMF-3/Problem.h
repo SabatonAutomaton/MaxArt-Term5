@@ -30,7 +30,7 @@ private:
    enum class SolveMethod
    {
       LU,
-      MSGDiagonal,
+      LOSDiagonal,
       BCGSTAB
    };
 

@@ -1,6 +1,6 @@
 #include "Problem.h"
 #include "LU.h"
-#include "MSG.h"
+#include "LOS.h"
 #include "SLE.h"
 #include "SLEAssistant.h"
 #include <algorithm>
@@ -31,6 +31,9 @@ int main( )
    case 3:
       std::cout << "Running test case 3: 3D harmonic linear manufactured test #2\n";
       break;
+   case 4:
+       std::cout << "Running polynomial approximation test\n";
+       break;
    default:
       std::cout << "Unknown test in test.txt, fallback to case 1\n";
       testCase = 1;
