@@ -1,13 +1,14 @@
 #include "BCGSTAB.h"
 #include <cmath>
 
-std::vector<double> BCGSTAB::SolutionWithDiagonalConditioning( SLE sle )
+std::vector<double> BCGSTAB::SolutionWithDiagonalConditioning( SLE& sle )
 {
    const int n = sle.matrix.n;
    const double fNorm2 = SLEAssistant::DotProduct( sle.f, sle.f );
    if ( fNorm2 < 1e-30 )
    {
       std::cout << "Residual: 0 k: 0\n";
+      sle.iterCount = 0;
       return sle.x;
    }
    const double stopCrit = sle.eps * sle.eps * fNorm2;
@@ -84,6 +85,8 @@ std::vector<double> BCGSTAB::SolutionWithDiagonalConditioning( SLE sle )
 
       if ( std::abs( omega ) < 1e-30 ) break;
    }
+
+   sle.iterCount = k;
 
    std::cout << "Residual: " << std::sqrt( residual2 / fNorm2 ) << " k: " << k << "\n";
    return sle.x;

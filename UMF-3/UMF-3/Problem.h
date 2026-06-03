@@ -71,6 +71,7 @@ private:
    void Run3DHarmonicTest( int testNumber );
    L2Errors3D ComputeL2Errors3D( double t ) const;
    Matrix ConvertToMatrix( const SparseMatrix &sparse ) const;
+   void RunCoefficientTests();
 
    Mesh mesh;
    Mesh3D mesh3d;

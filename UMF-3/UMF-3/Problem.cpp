@@ -13,56 +13,64 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <set>
 #include <string>
 #include <stdexcept>
 #include <chrono>
 
-void Problem::Run(int testCase)
+void Problem::Run( int testCase )
 {
-    if (testCase == 1)
-    {
-        dimension = Dimension::OneD;
+   if ( testCase == 1 )
+   {
+      dimension = Dimension::OneD;
 
-        Input();
-        BuildMatrix();
-        BuildB();
-        Solve();
-        PrintResult();
+      Input( );
+      BuildMatrix( );
+      BuildB( );
+      Solve( );
+      PrintResult( );
 
-        return;
-    }
+      return;
+   }
 
-    if (testCase == 4)
-    {
-        dimension = Dimension::ThreeD;
+   if ( testCase == 4 )
+   {
+      dimension = Dimension::ThreeD;
 
-        for (int p = 1; p <= 4; ++p)
-        {
-            std::cout << "\n====================\n";
-            std::cout << "Polynomial degree p = "
-                << p
-                << "\n";
-            std::cout << "====================\n";
+      for ( int p = 1; p <= 4; ++p )
+      {
+         std::cout << "\n====================\n";
+         std::cout << "Polynomial degree p = "
+            << p
+            << "\n";
+         std::cout << "====================\n";
 
-            Run3DHarmonicTest(p + 9);
-        }
+         Run3DHarmonicTest( p + 9 );
+      }
 
-        return;
-    }
+      return;
+   }
 
-    if (testCase >= 2)
-    {
-        dimension = Dimension::ThreeD;
+   if ( testCase == 5 )
+   {
+      dimension = Dimension::ThreeD;
+      RunCoefficientTests( );
+      return;
+   }
 
-        Run3DHarmonicTest(testCase);
+   if ( testCase >= 2 )
+   {
+      dimension = Dimension::ThreeD;
 
-        return;
-    }
+      Run3DHarmonicTest( testCase );
 
-    throw std::runtime_error(
-        "Unknown test case."
-    );
+      return;
+   }
+
+   throw std::runtime_error(
+      "Unknown test case."
+   );
 }
 
 void Problem::Input( )
@@ -75,7 +83,7 @@ void Problem::Input( )
    {
       std::string mode;
       solverFile >> mode;
-      std::transform( mode.begin( ), mode.end( ), mode.begin( ), []( unsigned char c ) { return static_cast<char>( std::toupper( c ) ); } );
+      std::transform( mode.begin( ), mode.end( ), mode.begin( ), []( unsigned char c ) { return static_cast< char >( std::toupper( c ) ); } );
       if ( mode == "LOS" )
       {
          solveMethod = SolveMethod::LOSDiagonal;
@@ -136,7 +144,7 @@ void Problem::BuildMatrix( )
    matrix.ig.assign( n + 1, 0 );
    for ( int i = 0; i < n; ++i )
    {
-      matrix.ig[i + 1] = matrix.ig[i] + static_cast<int>( rowProfile[i].size( ) );
+      matrix.ig[i + 1] = matrix.ig[i] + static_cast< int >( rowProfile[i].size( ) );
    }
 
    const int nnz = matrix.ig[n];
@@ -390,7 +398,7 @@ void Problem::Input3D( int testNumber )
    {
       std::string mode;
       solverFile >> mode;
-      std::transform( mode.begin( ), mode.end( ), mode.begin( ), []( unsigned char c ) { return static_cast<char>( std::toupper( c ) ); } );
+      std::transform( mode.begin( ), mode.end( ), mode.begin( ), []( unsigned char c ) { return static_cast< char >( std::toupper( c ) ); } );
       if ( mode == "LOS" )
       {
          solveMethod = SolveMethod::LOSDiagonal;
@@ -410,7 +418,7 @@ void Problem::Input3D( int testNumber )
       coeffsFile >> func.lambdaVal >> func.wVal >> func.sigmaVal >> func.xiVal;
    }
 
-   const int nNodes = static_cast<int>( mesh3d.nodes.size( ) );
+   const int nNodes = static_cast< int >( mesh3d.nodes.size( ) );
    n = 2 * nNodes;
    matrix = SparseMatrix( n );
    b.assign( n, 0.0 );
@@ -430,7 +438,7 @@ void Problem::Input3D( int testNumber )
    for ( size_t e = 0; e < mesh3d.hexes.size( ); ++e )
    {
       const auto &hex = mesh3d.hexes[e];
-      std::array<Element3D::Point3, 8> coords {};
+      std::array<Element3D::Point3, 8> coords{};
       std::vector<double> localFs( 8, 0.0 );
       std::vector<double> localFc( 8, 0.0 );
       std::vector<double> localLambda( 8, 0.0 );
@@ -459,7 +467,7 @@ void Problem::BuildMatrix3D( )
    std::vector<std::set<int>> rowProfile( n );
    for ( const auto &hex : mesh3d.hexes )
    {
-      std::array<int, 16> map {};
+      std::array<int, 16> map{};
       for ( int i = 0; i < 8; ++i )
       {
          map[2 * i] = 2 * hex.v[i];
@@ -481,7 +489,7 @@ void Problem::BuildMatrix3D( )
    matrix.ig.assign( n + 1, 0 );
    for ( int i = 0; i < n; ++i )
    {
-      matrix.ig[i + 1] = matrix.ig[i] + static_cast<int>( rowProfile[i].size( ) );
+      matrix.ig[i + 1] = matrix.ig[i] + static_cast< int >( rowProfile[i].size( ) );
    }
 
    const int nnz = matrix.ig[n];
@@ -536,7 +544,7 @@ void Problem::BuildMatrix3D( )
    for ( size_t e = 0; e < mesh3d.hexes.size( ); ++e )
    {
       elements3D[e].BuildLocalMatrix( );
-      std::array<int, 16> map {};
+      std::array<int, 16> map{};
       for ( int i = 0; i < 8; ++i )
       {
          map[2 * i] = 2 * mesh3d.hexes[e].v[i];
@@ -559,7 +567,7 @@ void Problem::BuildB3D( )
    for ( size_t e = 0; e < mesh3d.hexes.size( ); ++e )
    {
       elements3D[e].BuildLocalB( );
-      std::array<int, 16> map {};
+      std::array<int, 16> map{};
       for ( int i = 0; i < 8; ++i )
       {
          map[2 * i] = 2 * mesh3d.hexes[e].v[i];
@@ -635,7 +643,7 @@ void Problem::Solve3D( )
       if ( !isDir[col] ) continue;
       for ( int idx = matrix.ig[col]; idx < matrix.ig[col + 1]; ++idx )
       {
-         const int row = matrix.jg[idx];  
+         const int row = matrix.jg[idx];
          if ( isDir[row] ) continue;
          bFree[oldToNew[row]] -= matrix.ggu[idx] * dirVal[col];
       }
@@ -650,7 +658,7 @@ void Problem::Solve3D( )
       for ( int idx = matrix.ig[row]; idx < matrix.ig[row + 1]; ++idx )
       {
          const int col = matrix.jg[idx];
-         if ( !isDir[col] )  
+         if ( !isDir[col] )
             ++cnt;
       }
       igR[k + 1] = igR[k] + cnt;
@@ -686,7 +694,7 @@ void Problem::Solve3D( )
       denseMatrix = ConvertToMatrix( reduced );
       std::cout << "Converting done!";
    }
-      
+
    auto start = std::chrono::steady_clock::now( );
 
    if ( solveMethod == SolveMethod::LOSDiagonal )
@@ -750,7 +758,7 @@ void Problem::PrintResult3D( )
    double maxErrUs = 0.0;
    double maxErrUc = 0.0;
    double maxErrU = 0.0;
-   const int nNodes = static_cast<int>( mesh3d.nodes.size( ) );
+   const int nNodes = static_cast< int >( mesh3d.nodes.size( ) );
    const int variant = current3DTestNumber;
    const L2Errors3D l2 = ComputeL2Errors3D( tEval );
    for ( int i = 0; i < nNodes; ++i )
@@ -897,7 +905,7 @@ Matrix Problem::ConvertToMatrix( const SparseMatrix &sparse ) const
       for ( int k = sparse.ig[i]; k < sparse.ig[i + 1]; ++k )
       {
          const int j = sparse.jg[k];
-         const int jl = maxBandwidth - (i - j);
+         const int jl = maxBandwidth - ( i - j );
 
          dense.ggl[i][jl] = sparse.ggl[k];
          dense.ggu[i][jl] = sparse.ggu[k];
@@ -906,3 +914,538 @@ Matrix Problem::ConvertToMatrix( const SparseMatrix &sparse ) const
 
    return dense;
 }
+
+void Problem::RunCoefficientTests( )
+{
+   std::ifstream csvFile( "../../Lab_3/testsCoeffs.csv" );
+   if ( !csvFile )
+   {
+      std::cerr << "Cannot open testsCoeffs.csv\n";
+      return;
+   }
+
+   struct TestRow
+   {
+      int rowNum;
+      double lambda;
+      double omega;
+      double sigma;
+      double chi;
+      bool hasLambda, hasOmega, hasSigma, hasChi;
+   };
+
+   std::vector<TestRow> tests;
+   std::string line;
+
+   // Пропускаем заголовок
+   std::getline( csvFile, line );
+
+   double currentLambda = 0, currentOmega = 0, currentSigma = 0, currentChi = 0;
+   int rowNum = 1;
+
+   while ( std::getline( csvFile, line ) )
+   {
+      if ( line.empty( ) ) continue;
+
+      std::istringstream iss( line );
+      std::string token;
+      std::vector<std::string> tokens;
+
+      while ( std::getline( iss, token, ';' ) )
+      {
+         tokens.push_back( token );
+      }
+
+      if ( tokens.size( ) < 4 ) continue;
+
+      TestRow test;
+      test.rowNum = rowNum++;
+      test.hasLambda = !tokens[0].empty( );
+      test.hasOmega = !tokens[1].empty( );
+      test.hasSigma = !tokens[2].empty( );
+      test.hasChi = !tokens[3].empty( );
+
+      if ( test.hasLambda )
+      {
+         currentLambda = std::stod( tokens[0] );
+      }
+      if ( test.hasOmega )
+      {
+         currentOmega = std::stod( tokens[1] );
+      }
+      if ( test.hasSigma )
+      {
+         currentSigma = std::stod( tokens[2] );
+      }
+      if ( test.hasChi )
+      {
+         currentChi = std::stod( tokens[3] );
+      }
+
+      test.lambda = currentLambda;
+      test.omega = currentOmega;
+      test.sigma = currentSigma;
+      test.chi = currentChi;
+
+      tests.push_back( test );
+   }
+   csvFile.close( );
+
+   // Открываем файл для записи результатов
+   std::ofstream outCsv( "../../Lab_3/testsCoeffs_results.csv" );
+   outCsv << "Row;lambda;omega;sigma;xi;time LOS, ms;k LOS;||u - u*||LOS;time BCGSTAB, ms;k BCGSTAB;||u - u*||BCGSTAB\n";
+   outCsv << std::scientific << std::setprecision( 2 );
+
+   for ( const auto &test : tests )
+   {
+      std::cout << "\n========================================\n";
+      std::cout << "Test row " << test.rowNum << ": lambda=" << test.lambda
+         << " omega=" << test.omega << " sigma=" << test.sigma << " xi=" << test.chi << "\n";
+      std::cout << "========================================\n";
+
+      // Записываем коэффициенты в файл
+      std::ofstream coeffFile( "coefficients.txt" );
+      coeffFile << std::scientific << std::setprecision( 16 );
+      coeffFile << test.lambda << " " << test.omega << " " << test.sigma << " " << test.chi;
+      coeffFile.close( );
+
+      // Тест с LOS
+      std::ofstream solverFile( "solver.txt" );
+      solverFile << "LOS";
+      solverFile.close( );
+
+      std::cout << "\n--- Running with LOS solver ---\n";
+      Input3D( 2 );
+      BuildMatrix3D( );
+      BuildB3D( );
+
+      auto startLOS = std::chrono::steady_clock::now( );
+
+      const double xMin = mesh3d.meshX.front( ), xMax = mesh3d.meshX.back( );
+      const double yMin = mesh3d.meshY.front( ), yMax = mesh3d.meshY.back( );
+      const double zMin = mesh3d.meshZ.front( ), zMax = mesh3d.meshZ.back( );
+      const int nNodes = static_cast< int >( mesh3d.nodes.size( ) );
+
+      std::vector<char> isDir( n, 0 );
+      std::vector<double> dirVal( n, 0.0 );
+
+      for ( int node = 0; node < nNodes; ++node )
+      {
+         const auto &p = mesh3d.nodes[node];
+         const bool isBoundary =
+            std::abs( p.x - xMin ) < 1e-12 || std::abs( p.x - xMax ) < 1e-12 ||
+            std::abs( p.y - yMin ) < 1e-12 || std::abs( p.y - yMax ) < 1e-12 ||
+            std::abs( p.z - zMin ) < 1e-12 || std::abs( p.z - zMax ) < 1e-12;
+         if ( !isBoundary ) continue;
+
+         isDir[2 * node] = 1;  dirVal[2 * node] = usExact3D[node];
+         isDir[2 * node + 1] = 1;  dirVal[2 * node + 1] = ucExact3D[node];
+      }
+
+      std::vector<int> oldToNew( n, -1 );
+      std::vector<int> newToOld;
+      newToOld.reserve( n );
+      for ( int i = 0; i < n; ++i )
+      {
+         if ( !isDir[i] )
+         {
+            oldToNew[i] = static_cast< int >( newToOld.size( ) );
+            newToOld.push_back( i );
+         }
+      }
+      const int nFree = static_cast< int >( newToOld.size( ) );
+
+      std::vector<double> bFree( nFree, 0.0 );
+      for ( int k = 0; k < nFree; ++k )
+         bFree[k] = b[newToOld[k]];
+
+      for ( int row = 0; row < n; ++row )
+      {
+         if ( isDir[row] ) continue;
+         const int kRow = oldToNew[row];
+         for ( int idx = matrix.ig[row]; idx < matrix.ig[row + 1]; ++idx )
+         {
+            const int col = matrix.jg[idx];
+            if ( isDir[col] )
+               bFree[kRow] -= matrix.ggl[idx] * dirVal[col];
+         }
+      }
+
+      for ( int col = 0; col < n; ++col )
+      {
+         if ( !isDir[col] ) continue;
+         for ( int idx = matrix.ig[col]; idx < matrix.ig[col + 1]; ++idx )
+         {
+            const int row = matrix.jg[idx];
+            if ( isDir[row] ) continue;
+            bFree[oldToNew[row]] -= matrix.ggu[idx] * dirVal[col];
+         }
+      }
+
+      std::vector<int> igR( nFree + 1, 0 );
+      for ( int k = 0; k < nFree; ++k )
+      {
+         const int row = newToOld[k];
+         int cnt = 0;
+         for ( int idx = matrix.ig[row]; idx < matrix.ig[row + 1]; ++idx )
+         {
+            const int col = matrix.jg[idx];
+            if ( !isDir[col] )
+               ++cnt;
+         }
+         igR[k + 1] = igR[k] + cnt;
+      }
+      const int nnzR = igR[nFree];
+
+      SparseMatrix reduced( nFree );
+      reduced.ig = igR;
+      reduced.jg.resize( nnzR );
+      reduced.ggl.resize( nnzR, 0.0 );
+      reduced.ggu.resize( nnzR, 0.0 );
+      reduced.di.assign( nFree, 0.0 );
+
+      for ( int k = 0; k < nFree; ++k )
+      {
+         const int row = newToOld[k];
+         int pos = igR[k];
+         for ( int idx = matrix.ig[row]; idx < matrix.ig[row + 1]; ++idx )
+         {
+            const int col = matrix.jg[idx];
+            if ( isDir[col] ) continue;
+            reduced.jg[pos] = oldToNew[col];
+            reduced.ggl[pos] = matrix.ggl[idx];
+            reduced.ggu[pos] = matrix.ggu[idx];
+            ++pos;
+         }
+         reduced.di[k] = matrix.di[row];
+      }
+
+      SLE sle;
+      sle.matrix = reduced;
+      sle.f = bFree;
+      sle.x.assign( nFree, 0.0 );
+      sle.maxIter = 1000;
+      sle.eps = test.chi;
+      std::vector<double> qFree = LOS::SolutionWithDiagonalConditioning( sle );
+
+      auto endLOS = std::chrono::steady_clock::now( );
+      long long timeLOS = std::chrono::duration_cast< std::chrono::milliseconds >( endLOS - startLOS ).count( );
+
+      q3d.assign( n, 0.0 );
+      for ( int k = 0; k < nFree; ++k )
+         q3d[newToOld[k]] = qFree[k];
+      for ( int i = 0; i < n; ++i )
+         if ( isDir[i] )
+            q3d[i] = dirVal[i];
+
+      double maxErrLOS = 0.0;
+      for ( int i = 0; i < nNodes; ++i )
+      {
+         const double usNum = q3d[2 * i];
+         const double ucNum = q3d[2 * i + 1];
+         const double usEx = usExact3D[i];
+         const double ucEx = ucExact3D[i];
+         maxErrLOS = std::max( maxErrLOS, std::abs( usNum - usEx ) );
+         maxErrLOS = std::max( maxErrLOS, std::abs( ucNum - ucEx ) );
+      }
+
+      std::cout << "LOS Time: " << timeLOS << " ms\n";
+      std::cout << "LOS Iterations: " << sle.iterCount << "\n";
+      std::cout << "LOS Max Error: " << maxErrLOS << "\n";
+
+      // Тест с BCGSTAB
+      solverFile.open( "solver.txt" );
+      solverFile << "BCGSTAB";
+      solverFile.close( );
+
+      std::cout << "\n--- Running with BCGSTAB solver ---\n";
+      Input3D( 2 );
+      BuildMatrix3D( );
+      BuildB3D( );
+
+      auto startBCGSTAB = std::chrono::steady_clock::now( );
+
+      // Повторяем подготовку для BCGSTAB
+      isDir.assign( n, 0 );
+      dirVal.assign( n, 0.0 );
+
+      for ( int node = 0; node < nNodes; ++node )
+      {
+         const auto &p = mesh3d.nodes[node];
+         const bool isBoundary =
+            std::abs( p.x - xMin ) < 1e-12 || std::abs( p.x - xMax ) < 1e-12 ||
+            std::abs( p.y - yMin ) < 1e-12 || std::abs( p.y - yMax ) < 1e-12 ||
+            std::abs( p.z - zMin ) < 1e-12 || std::abs( p.z - zMax ) < 1e-12;
+         if ( !isBoundary ) continue;
+
+         isDir[2 * node] = 1;  dirVal[2 * node] = usExact3D[node];
+         isDir[2 * node + 1] = 1;  dirVal[2 * node + 1] = ucExact3D[node];
+      }
+
+      oldToNew.assign( n, -1 );
+      newToOld.clear( );
+      newToOld.reserve( n );
+      for ( int i = 0; i < n; ++i )
+      {
+         if ( !isDir[i] )
+         {
+            oldToNew[i] = static_cast< int >( newToOld.size( ) );
+            newToOld.push_back( i );
+         }
+      }
+
+      bFree.assign( nFree, 0.0 );
+      for ( int k = 0; k < nFree; ++k )
+         bFree[k] = b[newToOld[k]];
+
+      for ( int row = 0; row < n; ++row )
+      {
+         if ( isDir[row] ) continue;
+         const int kRow = oldToNew[row];
+         for ( int idx = matrix.ig[row]; idx < matrix.ig[row + 1]; ++idx )
+         {
+            const int col = matrix.jg[idx];
+            if ( isDir[col] )
+               bFree[kRow] -= matrix.ggl[idx] * dirVal[col];
+         }
+      }
+
+      for ( int col = 0; col < n; ++col )
+      {
+         if ( !isDir[col] ) continue;
+         for ( int idx = matrix.ig[col]; idx < matrix.ig[col + 1]; ++idx )
+         {
+            const int row = matrix.jg[idx];
+            if ( isDir[row] ) continue;
+            bFree[oldToNew[row]] -= matrix.ggu[idx] * dirVal[col];
+         }
+      }
+
+      igR.assign( nFree + 1, 0 );
+      for ( int k = 0; k < nFree; ++k )
+      {
+         const int row = newToOld[k];
+         int cnt = 0;
+         for ( int idx = matrix.ig[row]; idx < matrix.ig[row + 1]; ++idx )
+         {
+            const int col = matrix.jg[idx];
+            if ( !isDir[col] )
+               ++cnt;
+         }
+         igR[k + 1] = igR[k] + cnt;
+      }
+
+      reduced = SparseMatrix( nFree );
+      reduced.ig = igR;
+      reduced.jg.resize( nnzR );
+      reduced.ggl.resize( nnzR, 0.0 );
+      reduced.ggu.resize( nnzR, 0.0 );
+      reduced.di.assign( nFree, 0.0 );
+
+      for ( int k = 0; k < nFree; ++k )
+      {
+         const int row = newToOld[k];
+         int pos = igR[k];
+         for ( int idx = matrix.ig[row]; idx < matrix.ig[row + 1]; ++idx )
+         {
+            const int col = matrix.jg[idx];
+            if ( isDir[col] ) continue;
+            reduced.jg[pos] = oldToNew[col];
+            reduced.ggl[pos] = matrix.ggl[idx];
+            reduced.ggu[pos] = matrix.ggu[idx];
+            ++pos;
+         }
+         reduced.di[k] = matrix.di[row];
+      }
+
+      SLE sleBCG;
+      sleBCG.matrix = reduced;
+      sleBCG.f = bFree;
+      sleBCG.x.assign( nFree, 0.0 );
+      sleBCG.maxIter = 10000;
+      sleBCG.eps = test.chi;
+      qFree = BCGSTAB::SolutionWithDiagonalConditioning( sleBCG );
+
+      auto endBCGSTAB = std::chrono::steady_clock::now( );
+      long long timeBCGSTAB = std::chrono::duration_cast< std::chrono::milliseconds >( endBCGSTAB - startBCGSTAB ).count( );
+
+      q3d.assign( n, 0.0 );
+      for ( int k = 0; k < nFree; ++k )
+         q3d[newToOld[k]] = qFree[k];
+      for ( int i = 0; i < n; ++i )
+         if ( isDir[i] )
+            q3d[i] = dirVal[i];
+
+      double maxErrBCGSTAB = 0.0;
+      for ( int i = 0; i < nNodes; ++i )
+      {
+         const double usNum = q3d[2 * i];
+         const double ucNum = q3d[2 * i + 1];
+         const double usEx = usExact3D[i];
+         const double ucEx = ucExact3D[i];
+         maxErrBCGSTAB = std::max( maxErrBCGSTAB, std::abs( usNum - usEx ) );
+         maxErrBCGSTAB = std::max( maxErrBCGSTAB, std::abs( ucNum - ucEx ) );
+      }
+
+      std::cout << "BCGSTAB Time: " << timeBCGSTAB << " ms\n";
+      std::cout << "BCGSTAB Iterations: " << sleBCG.iterCount << "\n";
+      std::cout << "BCGSTAB Max Error: " << maxErrBCGSTAB << "\n";
+
+      /* ЗАКОММЕНТИРОВАНО - LU слишком медленный
+      // Тест с LU
+      solverFile.open("solver.txt");
+      solverFile << "LU";
+      solverFile.close();
+
+      std::cout << "\n--- Running with LU solver ---\n";
+      Input3D(2);
+      BuildMatrix3D();
+      BuildB3D();
+
+      auto startLU = std::chrono::steady_clock::now();
+
+      // Повторяем подготовку для LU
+      isDir.assign(n, 0);
+      dirVal.assign(n, 0.0);
+
+      for (int node = 0; node < nNodes; ++node)
+      {
+         const auto& p = mesh3d.nodes[node];
+         const bool isBoundary =
+            std::abs(p.x - xMin) < 1e-12 || std::abs(p.x - xMax) < 1e-12 ||
+            std::abs(p.y - yMin) < 1e-12 || std::abs(p.y - yMax) < 1e-12 ||
+            std::abs(p.z - zMin) < 1e-12 || std::abs(p.z - zMax) < 1e-12;
+         if (!isBoundary) continue;
+
+         isDir[2 * node] = 1;  dirVal[2 * node] = usExact3D[node];
+         isDir[2 * node + 1] = 1;  dirVal[2 * node + 1] = ucExact3D[node];
+      }
+
+      oldToNew.assign(n, -1);
+      newToOld.clear();
+      newToOld.reserve(n);
+      for (int i = 0; i < n; ++i)
+      {
+         if (!isDir[i])
+         {
+            oldToNew[i] = static_cast<int>(newToOld.size());
+            newToOld.push_back(i);
+         }
+      }
+
+      bFree.assign(nFree, 0.0);
+      for (int k = 0; k < nFree; ++k)
+         bFree[k] = b[newToOld[k]];
+
+      for (int row = 0; row < n; ++row)
+      {
+         if (isDir[row]) continue;
+         const int kRow = oldToNew[row];
+         for (int idx = matrix.ig[row]; idx < matrix.ig[row + 1]; ++idx)
+         {
+            const int col = matrix.jg[idx];
+            if (isDir[col])
+               bFree[kRow] -= matrix.ggl[idx] * dirVal[col];
+         }
+      }
+
+      for (int col = 0; col < n; ++col)
+      {
+         if (!isDir[col]) continue;
+         for (int idx = matrix.ig[col]; idx < matrix.ig[col + 1]; ++idx)
+         {
+            const int row = matrix.jg[idx];
+            if (isDir[row]) continue;
+            bFree[oldToNew[row]] -= matrix.ggu[idx] * dirVal[col];
+         }
+      }
+
+      igR.assign(nFree + 1, 0);
+      for (int k = 0; k < nFree; ++k)
+      {
+         const int row = newToOld[k];
+         int cnt = 0;
+         for (int idx = matrix.ig[row]; idx < matrix.ig[row + 1]; ++idx)
+         {
+            const int col = matrix.jg[idx];
+            if (!isDir[col])
+               ++cnt;
+         }
+         igR[k + 1] = igR[k] + cnt;
+      }
+
+      reduced = SparseMatrix(nFree);
+      reduced.ig = igR;
+      reduced.jg.resize(nnzR);
+      reduced.ggl.resize(nnzR, 0.0);
+      reduced.ggu.resize(nnzR, 0.0);
+      reduced.di.assign(nFree, 0.0);
+
+      for (int k = 0; k < nFree; ++k)
+      {
+         const int row = newToOld[k];
+         int pos = igR[k];
+         for (int idx = matrix.ig[row]; idx < matrix.ig[row + 1]; ++idx)
+         {
+            const int col = matrix.jg[idx];
+            if (isDir[col]) continue;
+            reduced.jg[pos] = oldToNew[col];
+            reduced.ggl[pos] = matrix.ggl[idx];
+            reduced.ggu[pos] = matrix.ggu[idx];
+            ++pos;
+         }
+         reduced.di[k] = matrix.di[row];
+      }
+
+      Matrix denseMatrix = ConvertToMatrix(reduced);
+      LU lu(denseMatrix, bFree);
+      lu.calcLU();
+      lu.calcY();
+      lu.calcQ();
+      qFree = lu.q;
+
+      auto endLU = std::chrono::steady_clock::now();
+      long long timeLU = std::chrono::duration_cast<std::chrono::milliseconds>(endLU - startLU).count();
+
+      q3d.assign(n, 0.0);
+      for (int k = 0; k < nFree; ++k)
+         q3d[newToOld[k]] = qFree[k];
+      for (int i = 0; i < n; ++i)
+         if (isDir[i])
+            q3d[i] = dirVal[i];
+
+      double maxErrLU = 0.0;
+      for (int i = 0; i < nNodes; ++i)
+      {
+         const double usNum = q3d[2 * i];
+         const double ucNum = q3d[2 * i + 1];
+         const double usEx = usExact3D[i];
+         const double ucEx = ucExact3D[i];
+         maxErrLU = std::max(maxErrLU, std::abs(usNum - usEx));
+         maxErrLU = std::max(maxErrLU, std::abs(ucNum - ucEx));
+      }
+
+      std::cout << "LU Time: " << timeLU << " ms\n";
+      std::cout << "LU Max Error: " << maxErrLU << "\n";
+      */
+
+      // Записываем результаты (только LOS)
+      outCsv << test.rowNum << ";"
+             << test.lambda << ";"
+             << test.omega << ";"
+             << test.sigma << ";"
+             << test.chi << ";"
+             << timeLOS << ";"
+             << sle.iterCount << ";"
+             << maxErrLOS << ";"
+             << timeBCGSTAB << ";"
+             << sleBCG.iterCount << ";"
+             << maxErrBCGSTAB << ";" << "\n";
+   }
+
+   outCsv.close( );
+   std::cout << "\n========================================\n";
+   std::cout << "All tests completed! Results saved to testsCoeffs_results.csv\n";
+   std::cout << "========================================\n";
+}
+

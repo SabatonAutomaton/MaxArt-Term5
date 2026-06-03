@@ -34,6 +34,9 @@ int main( )
    case 4:
        std::cout << "Running polynomial approximation test\n";
        break;
+   case 5:
+       std::cout << "Running coefficient tests from testsCoeffs.csv\n";
+       break;
    default:
       std::cout << "Unknown test in test.txt, fallback to case 1\n";
       testCase = 1;

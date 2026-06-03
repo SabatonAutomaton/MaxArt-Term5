@@ -3,7 +3,7 @@
 #include <cmath>
 #include <iostream>
 
-std::vector<double> LOS::SolutionWithoutConditioning(SLE sle)
+std::vector<double> LOS::SolutionWithoutConditioning(SLE& sle)
 {
     const int n = sle.matrix.n;
 
@@ -16,6 +16,7 @@ std::vector<double> LOS::SolutionWithoutConditioning(SLE sle)
     if (fNorm < 1e-30)
     {
         std::cout << "Residual: 0 k: 0\n";
+        sle.iterCount = 0;
         return sle.x;
     }
 
@@ -82,6 +83,8 @@ std::vector<double> LOS::SolutionWithoutConditioning(SLE sle)
         }
     }
 
+    sle.iterCount = k;
+
     std::cout
         << "Residual: "
         << residual / fNorm
@@ -92,7 +95,7 @@ std::vector<double> LOS::SolutionWithoutConditioning(SLE sle)
     return sle.x;
 }
 
-std::vector<double> LOS::SolutionWithDiagonalConditioning(SLE sle)
+std::vector<double> LOS::SolutionWithDiagonalConditioning(SLE& sle)
 {
     const int n = sle.matrix.n;
 
@@ -105,6 +108,7 @@ std::vector<double> LOS::SolutionWithDiagonalConditioning(SLE sle)
     if (fNorm < 1e-30)
     {
         std::cout << "Residual: 0 k: 0\n";
+        sle.iterCount = 0;
         return sle.x;
     }
 
@@ -191,6 +195,8 @@ std::vector<double> LOS::SolutionWithDiagonalConditioning(SLE sle)
             p[i] = q[i] + beta * p[i];
         }
     }
+
+    sle.iterCount = k;
 
     std::cout
         << "Residual: "

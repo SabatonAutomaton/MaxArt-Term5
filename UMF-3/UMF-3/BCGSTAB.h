@@ -6,5 +6,5 @@
 class BCGSTAB
 {
 public:
-   static std::vector<double> SolutionWithDiagonalConditioning( SLE sle );
+   static std::vector<double> SolutionWithDiagonalConditioning( SLE& sle );
 };
